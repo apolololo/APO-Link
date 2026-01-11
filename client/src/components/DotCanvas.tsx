@@ -24,8 +24,19 @@ const DotCanvas = () => {
   const [isPressedState, setIsPressedState] = useState(false);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
+    // Détecter si on est sur mobile
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      return mobile;
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -340,16 +351,33 @@ const DotCanvas = () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleMouseUp);
+      window.removeEventListener('resize', checkMobile);
       cancelAnimationFrame(animationId);
     };
   }, []);
   
+  // Sur mobile, réduire considérablement les effets pour économiser la batterie
+  if (isMobile) {
+    return (
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
+        style={{ 
+          background: '#000000',
+          opacity: 0.3, // Très faible opacité sur mobile
+          display: 'none' // Cacher complètement le canvas sur mobile
+        }}
+      />
+    );
+  }
+
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full bg-black"
+    <canvas
+      ref={canvasRef}
+      className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
       style={{ 
-        zIndex: -1
+        background: '#000000',
+        opacity: 0.7
       }}
     />
   );
