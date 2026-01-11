@@ -1,11 +1,8 @@
 import DotCanvas from "@/components/DotCanvas";
 import Header from "@/components/Header";
 import SocialGrid from "@/components/SocialGrid";
-import CustomCursor from "@/components/CustomCursor";
 import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
-import CreationsSection from "@/components/CreationsSection";
-import MobileDebugger from "@/components/MobileDebugger";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -50,7 +47,6 @@ export default function Home() {
       
       {/* Contenu scrollable avec fond transparent */}
       <div className="relative z-10 bg-transparent">
-        {!isMobile && <CustomCursor />}
         
         {/* Section principale avec les liens */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -58,11 +54,6 @@ export default function Home() {
         <div className="mt-2">
           <SocialGrid />
         </div>
-        </section>
-        
-        {/* Section des créations */}
-        <section className="relative">
-          <CreationsSection />
         </section>
       </div>
       
