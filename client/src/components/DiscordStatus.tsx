@@ -79,7 +79,7 @@ export default function DiscordStatus() {
     );
   }
 
-  if (error || !data?.success) return null;
+  if (!data?.success) return null;
 
   const { discord_user, discord_status, activities } = data.data;
   const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.png`;
