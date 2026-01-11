@@ -622,20 +622,6 @@ const DotTicTacToe = () => {
         <div className="mb-2 flex justify-between items-center">
           <div className="text-white text-opacity-90 text-base font-semibold">Morpion</div>
           <div className="flex space-x-2">
-            <button
-              onClick={() => {
-                setShowSettings(!showSettings);
-                // Arrêter la partie en cours si on ouvre les options
-                if (!showSettings && gameStarted) {
-                  setGameStarted(false);
-                  setBoard(Array(3).fill(null).map(() => Array(3).fill(null)));
-                  setWinner(null);
-                }
-              }}
-              className="text-white text-opacity-80 hover:text-opacity-100 text-xs px-2.5 py-1.5 bg-black bg-opacity-30 rounded hover:bg-opacity-50 transition-all"
-            >
-              Options
-            </button>
             {gameStarted ? (
               <button
                 onClick={() => {

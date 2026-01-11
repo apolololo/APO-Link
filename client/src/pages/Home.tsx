@@ -5,6 +5,7 @@ import CustomCursor from "@/components/CustomCursor";
 import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
 import CreationsSection from "@/components/CreationsSection";
+import DiscordStatus from "@/components/DiscordStatus";
 import { useEffect } from "react";
 
 export default function Home() {
