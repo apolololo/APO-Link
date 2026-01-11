@@ -5,6 +5,7 @@ import CustomCursor from "@/components/CustomCursor";
 import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
 import CreationsSection from "@/components/CreationsSection";
+import MobileDebugger from "@/components/MobileDebugger";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -38,6 +39,9 @@ export default function Home() {
 
   return (
     <div className="relative w-full min-h-screen">
+      {/* Débogage mobile */}
+      <MobileDebugger />
+      
       {/* Fond avec les étoiles - fixe en arrière-plan */}
       <DotCanvas />
       

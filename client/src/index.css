@@ -131,6 +131,49 @@
   }
 }
 
+/* Styles spécifiques pour mobile */
+@media (max-width: 768px) {
+  /* Désactiver le curseur personnalisé sur mobile */
+  * {
+    cursor: auto !important;
+  }
+  
+  /* S'assurer que le body est visible sur mobile */
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+    background: #000000 !important;
+  }
+  
+  /* Rendre le canvas plus performant sur mobile */
+  canvas {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* S'assurer que le contenu principal est visible */
+  #root {
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Forcer l'affichage du contenu sur mobile */
+  .relative.z-10 {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  /* Empêcher le canvas de bloquer l'interaction sur mobile */
+  canvas[ref] {
+    pointer-events: none !important;
+  }
+}
+
 @layer components {
   .platform-card {
     @apply bg-card bg-opacity-80 backdrop-blur-md rounded-xl p-5 flex flex-col items-center justify-center gap-3 
