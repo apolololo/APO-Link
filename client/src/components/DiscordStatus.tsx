@@ -1,179 +1,231 @@
-import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SiDiscord, SiSpotify } from "react-icons/si";
-import { Gamepad2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-const USER_ID = "592055410509479960";
-const API_URL = `https://api.lanyard.rest/v1/users/${USER_ID}`;
-
-interface LanyardResponse {
-  data: {
-    discord_user: {
-      username: string;
-      discriminator: string;
-      avatar: string;
-      id: string;
-      global_name: string | null;
-    };
-    discord_status: "online" | "idle" | "dnd" | "offline";
-    activities: {
-      type: number;
-      name: string;
-      state?: string;
-      details?: string;
-      assets?: {
-        large_image?: string;
-        small_image?: string;
-        large_text?: string;
-        small_text?: string;
-      };
-      session_id?: string;
-      sync_id?: string;
-    }[];
-    active_on_discord_web: boolean;
-    active_on_discord_mobile: boolean;
-    active_on_discord_desktop: boolean;
+interface DiscordUser {
+  id: string;
+  username: string;
+  global_name: string | null;
+  discriminator: string;
+  avatar: string | null;
+  public_flags: number;
+  flags: number;
+  banner: string | null;
+  accent_color: number | null;
+  avatar_decoration_data: any;
+  banner_color: string | null;
+  clan?: {
+    identity_guild_id: string;
+    identity_enabled: boolean;
+    tag: string;
+    badge: string;
   };
-  success: boolean;
+  primary_guild?: {
+    identity_guild_id: string;
+    identity_enabled: boolean;
+    tag: string;
+    badge: string;
+  };
+  tag?: string;
+  createdAt: string;
+  createdTimestamp: number;
+  public_flags_array?: string[];
+  defaultAvatarURL: string;
+  avatarURL: string;
+  bannerURL: string | null;
 }
 
+interface DiscordAPIResponse {
+  cache_expiry: number;
+  cached: boolean;
+  data: {
+    user: DiscordUser;
+    presence?: {
+      error?: string;
+    };
+  };
+}
+
+const USER_ID = "592055410509479960";
+const JAPI_URL = `https://japi.rest/discord/v1/user/${USER_ID}`;
+
 const statusColors = {
-  online: "bg-green-500",
-  idle: "bg-yellow-500",
-  dnd: "bg-red-500",
-  offline: "bg-gray-500",
+  online: "#23a55a",
+  idle: "#f0b232", 
+  dnd: "#f23f43",
+  offline: "#80848e"
 };
 
-const statusText = {
-  online: "En ligne",
-  idle: "Absent",
-  dnd: "Ne pas déranger",
-  offline: "Hors ligne",
+const badgeMap: Record<string, string> = {
+  DISCORD_EMPLOYEE: "👔",
+  PARTNERED_SERVER_OWNER: "🤝",
+  HYPESQUAD_EVENTS: "🎉",
+  BUGHUNTER_LEVEL_1: "🐛",
+  BUGHUNTER_LEVEL_2: "🐞",
+  EARLY_SUPPORTER: "💎",
+  VERIFIED_BOT_DEVELOPER: "🤖",
+  ACTIVE_DEVELOPER: "⚙️",
+  HOUSE_BRAVERY: "🔥",
+  HOUSE_BRILLIANCE: "💡",
+  HOUSE_BALANCE: "⚖️"
 };
 
 export default function DiscordStatus() {
-  const { data, isLoading, error } = useQuery<LanyardResponse>({
-    queryKey: ["discord-status"],
-    queryFn: async () => {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Failed to fetch Discord status");
-      return res.json();
-    },
-    refetchInterval: 10000, // Refresh every 10s
-  });
+  const [discordData, setDiscordData] = useState<DiscordAPIResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const fetchDiscordData = async () => {
+      try {
+        const response = await fetch(JAPI_URL);
+        const data: DiscordAPIResponse = await response.json();
+        
+        if (mounted && data.data?.user) {
+          setDiscordData(data);
+          setError(null);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (mounted) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(() => fetchDiscordData(), 2000 * retryCount);
+          } else {
+            setError("Impossible de récupérer les données Discord");
+            setIsLoading(false);
+          }
+        }
+      }
+    };
+
+    fetchDiscordData();
+    const interval = setInterval(fetchDiscordData, 30000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   if (isLoading) {
     return (
-      <Card className="w-full max-w-md mx-auto p-4 bg-black/40 backdrop-blur-md border-white/10 animate-pulse">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-14 w-14 rounded-full bg-white/10" />
-          <div className="space-y-2 flex-1">
-            <Skeleton className="h-4 w-1/3 bg-white/10" />
-            <Skeleton className="h-3 w-1/4 bg-white/10" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10"
+      >
+        <Card className="p-4 bg-black/40 backdrop-blur-md border-white/10 w-80">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gray-700 animate-pulse" />
+            <div className="flex-1">
+              <div className="h-4 bg-gray-700 rounded animate-pulse mb-2" />
+              <div className="h-3 bg-gray-700 rounded animate-pulse mb-2" />
+              <div className="h-3 bg-gray-700 rounded animate-pulse" />
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
     );
   }
 
-  if (!data?.success) return null;
+  if (error || !discordData?.data?.user) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10"
+      >
+        <Card className="p-4 bg-black/40 backdrop-blur-md border-white/10 w-80">
+          <div className="text-center text-red-400">
+            <p className="text-sm">{error || "Erreur de chargement"}</p>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
 
-  const { discord_user, discord_status, activities } = data.data;
-  const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.png`;
-  
-  // Filter activities
-  const spotify = activities.find(a => a.name === "Spotify");
-  const game = activities.find(a => a.type === 0); // 0 is Playing
-  const customStatus = activities.find(a => a.type === 4);
-  
-  const activity = spotify || game || customStatus;
+  const user = discordData.data.user;
+  const clanTag = user.clan?.tag || user.primary_guild?.tag || user.tag;
+  const displayName = user.global_name || user.username;
+  const usernameWithDiscriminator = user.discriminator && user.discriminator !== "0" 
+    ? `${user.username}#${user.discriminator}` 
+    : `@${user.username}`;
+
+  const getBadges = () => {
+    const badges: string[] = [];
+    if (user.public_flags_array) {
+      user.public_flags_array.forEach(flag => {
+        if (badgeMap[flag]) {
+          badges.push(badgeMap[flag]);
+        }
+      });
+    }
+    return badges;
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md mx-auto mb-6 relative z-10"
+      className="relative z-10"
     >
-      <Card className="relative overflow-hidden bg-black/30 backdrop-blur-xl border-white/10 p-4 transition-all hover:bg-black/40 group shadow-lg shadow-black/20">
-        <div className="flex items-start gap-4">
-          {/* Avatar & Status */}
-          <div className="relative shrink-0">
-            <Avatar className="h-16 w-16 border-2 border-white/5 shadow-md">
-              <AvatarImage src={avatarUrl} alt={discord_user.username} />
-              <AvatarFallback className="bg-white/10 text-white">{discord_user.username[0]}</AvatarFallback>
-            </Avatar>
-            
-            {/* Status Indicator */}
-            <div className="absolute -bottom-1 -right-1 bg-black p-1 rounded-full">
-               <div className={`h-4 w-4 rounded-full border-2 border-black ${statusColors[discord_status]} animate-pulse`} 
-                    title={statusText[discord_status]}
-               />
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0 pt-1">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-white leading-none tracking-wide flex items-center gap-2">
-                  {discord_user.global_name || discord_user.username}
-                  {discord_user.discriminator !== "0" && (
-                    <span className="text-xs text-white/40 font-normal">#{discord_user.discriminator}</span>
-                  )}
-                </h3>
-                <p className="text-xs text-white/50 mt-1 font-mono">@{discord_user.username}</p>
-              </div>
-              <SiDiscord className="text-[#5865F2] h-5 w-5 opacity-50 group-hover:opacity-100 transition-opacity" />
-            </div>
-
-            {/* Activity Section */}
-            <div className="mt-3 pt-3 border-t border-white/5">
-              {activity ? (
-                <div className="flex items-center gap-3 text-sm text-white/80">
-                  {activity.name === "Spotify" ? (
-                    <SiSpotify className="text-[#1DB954] h-5 w-5 shrink-0" />
-                  ) : activity.type === 0 ? (
-                    <Gamepad2 className="text-purple-400 h-5 w-5 shrink-0" />
-                  ) : (
-                    <div className="h-5 w-5 flex items-center justify-center text-lg">💭</div>
-                  )}
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">
-                      {activity.name === "Spotify" ? activity.details : activity.name}
-                    </p>
-                    {(activity.state || activity.details) && activity.name !== "Spotify" && (
-                       <p className="text-xs text-white/50 truncate">
-                         {activity.state} {activity.details ? `- ${activity.details}` : ''}
-                       </p>
-                    )}
-                    {activity.name === "Spotify" && (
-                      <p className="text-xs text-white/50 truncate">
-                        par {activity.state}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-sm text-white/60">
-                  <div className={`h-1.5 w-1.5 rounded-full ${statusColors[discord_status]}`} />
-                  {statusText[discord_status]}
-                </div>
+      <Card className="p-4 bg-black/40 backdrop-blur-md border-white/10 w-80 hover:bg-black/50 transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <Avatar className="w-16 h-16">
+            <AvatarImage 
+              src={user.avatarURL} 
+              alt={user.username}
+              className="rounded-full"
+            />
+            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold text-lg">
+              {user.username.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-white text-lg truncate">
+                {displayName}
+              </h3>
+              {clanTag && (
+                <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold rounded-full">
+                  {clanTag}
+                </span>
               )}
             </div>
+            
+            <p className="text-gray-300 text-sm opacity-80 mb-2">
+              {usernameWithDiscriminator}
+            </p>
+            
+            <div className="flex items-center gap-2 mb-2">
+              <div 
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: statusColors.offline }}
+              />
+              <span className="text-gray-300 text-sm">Hors ligne</span>
+            </div>
+            
+            {getBadges().length > 0 && (
+              <div className="flex gap-1">
+                {getBadges().map((badge, index) => (
+                  <span key={index} className="text-lg" title={badge}>
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Animated border gradient bottom */}
-        <div className={`absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent ${
-           discord_status === 'online' ? 'via-green-500' : 
-           discord_status === 'dnd' ? 'via-red-500' : 
-           discord_status === 'idle' ? 'via-yellow-500' : 'via-gray-500'
-        } to-transparent opacity-50`} />
       </Card>
     </motion.div>
   );
