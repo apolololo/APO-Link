@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./client/src"),
     },
   },
-  base: process.env.NODE_ENV === 'production' || mode === 'production' ? "/apo-reseaux-site/" : "/", // GitHub Pages en prod, "/" en dev
+  base: process.env.NODE_ENV === 'production' || mode === 'production' ? "/APO-Link/" : "/", // GitHub Pages en prod, "/" en dev
   server: {
     host: true,
     port: 5000
