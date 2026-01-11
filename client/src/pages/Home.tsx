@@ -48,7 +48,10 @@ export default function Home() {
         {/* Section principale avec les liens */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4">
         <Header />
-        <div className="mt-8">
+        <div className="w-full mt-6">
+          <DiscordStatus />
+        </div>
+        <div className="mt-2">
           <SocialGrid />
         </div>
         </section>
