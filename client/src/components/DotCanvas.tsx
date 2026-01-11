@@ -65,15 +65,23 @@ const DotCanvas = () => {
     
     const updateParticles = (clientX: number, clientY: number) => {
       if (isPressedRef.current) {
+        // Optimisation : ne traiter que les particules proches
+        const maxDistance = 300;
         particlesRef.current.forEach(particle => {
           const dx = clientX - particle.x;
           const dy = clientY - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          // Extremely reduced attraction force
-          const attractionForce = 0.02;
-          particle.speedX += (dx / distance) * attractionForce;
-          particle.speedY += (dy / distance) * attractionForce;
+          if (distance < maxDistance) {
+            // Force d'attraction plus forte pour des mouvements plus rapides
+            const attractionForce = 0.08;
+            particle.speedX += (dx / distance) * attractionForce;
+            particle.speedY += (dy / distance) * attractionForce;
+            
+            // Augmenter la luminosité et la taille
+            particle.opacity = Math.min(particle.opacity + 0.02, 0.9);
+            particle.size = Math.min(particle.size + 0.1, particle.baseSize * 3);
+          }
           
           particle.targetX = clientX;
           particle.targetY = clientY;
@@ -123,7 +131,10 @@ const DotCanvas = () => {
         particle.isTargeting = false;
         particle.targetX = undefined;
         particle.targetY = undefined;
+        
+        // Retour progressif à la taille normale
         particle.size = particle.baseSize;
+        particle.opacity = Math.random() * 0.4 + 0.1;
         
         // Set new random home position
         particle.homeX = Math.random() * canvas.width;
@@ -265,6 +276,7 @@ const DotCanvas = () => {
             particle.x, particle.y, particle.size * 3
           );
           gradient.addColorStop(0, particle.color.replace("1)", `${particle.opacity})`));
+          gradient.addColorStop(0.5, particle.color.replace("1)", `${particle.opacity * 0.5})`));
           gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
           
           ctx.fillStyle = gradient;
@@ -276,18 +288,25 @@ const DotCanvas = () => {
           );
         }
         
+        // Rendre les étoiles plus brillantes
+        ctx.shadowBlur = particle.size * 2;
+        ctx.shadowColor = particle.color.replace("1)", `${particle.opacity * 0.8})`);
+        
         ctx.fillStyle = particle.color.replace("1)", `${particle.opacity})`);
         ctx.fill();
+        
+        // Réinitialiser le shadow
+        ctx.shadowBlur = 0;
       });
       
       // Connect nearby particles with thinner, more subtle lines
       // Réduire la fréquence des connexions sur mobile
-      const connectionFrequency = isMobile ? 4 : 2;
+      const connectionFrequency = isMobile ? 6 : 3;
       if (frameCountRef.current % connectionFrequency === 0) {
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
-        ctx.lineWidth = 0.1;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+        ctx.lineWidth = 0.15;
         
-        const gridSize = 150;
+        const gridSize = 200; // Augmenter la taille de la grille pour réduire les calculs
         const grid: { [key: string]: Particle[] } = {};
         
         particlesRef.current.forEach(p => {
@@ -308,7 +327,8 @@ const DotCanvas = () => {
           const neighbors = [
             [cellX, cellY],
             [cellX + 1, cellY],
-            [cellX, cellY + 1]
+            [cellX, cellY + 1],
+            [cellX + 1, cellY + 1] // Ajouter la diagonale
           ];
           
           for (const [nx, ny] of neighbors) {
@@ -318,7 +338,7 @@ const DotCanvas = () => {
             if (!neighborCell) continue;
             
             for (const p1 of grid[cellKey]) {
-              for (let i = 0; i < neighborCell.length; i += 3) {
+              for (let i = 0; i < neighborCell.length; i += 4) { // Réduire encore plus les vérifications
                 const p2 = neighborCell[i];
                 if (p1 === p2) continue;
                 
@@ -326,7 +346,7 @@ const DotCanvas = () => {
                 const dy = p1.y - p2.y;
                 const distSquared = dx * dx + dy * dy;
                 
-                if (distSquared < 8100) {
+                if (distSquared < 10000) { // Augmenter la distance de connexion
                   ctx.beginPath();
                   ctx.moveTo(p1.x, p1.y);
                   ctx.lineTo(p2.x, p2.y);
