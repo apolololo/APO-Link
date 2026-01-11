@@ -3,7 +3,7 @@ import { Volume2, VolumeX, SkipForward, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
-const GITHUB_MUSIC_URL = 'https://raw.githubusercontent.com/apolololo/apo-reseaux-site/main/musique';
+const GITHUB_MUSIC_URL = 'https://raw.githubusercontent.com/apolololo/APO-Link/main/musique';
 
 export default function MusicPlayer() {
   const [volume, setVolume] = useState(0.5);
@@ -17,7 +17,7 @@ export default function MusicPlayer() {
   const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/apolololo/apo-reseaux-site/contents/musique')
+    fetch('https://api.github.com/repos/apolololo/APO-Link/contents/musique')
       .then(response => response.json())
       .then(data => {
         if (!Array.isArray(data)) {
