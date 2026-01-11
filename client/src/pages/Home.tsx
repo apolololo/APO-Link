@@ -37,12 +37,12 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full min-h-screen">
       {/* Fond avec les étoiles - fixe en arrière-plan */}
       <DotCanvas />
       
-      {/* Contenu scrollable */}
-      <div className="relative z-10">
+      {/* Contenu scrollable avec fond transparent */}
+      <div className="relative z-10 bg-transparent">
         <CustomCursor />
         
         {/* Section principale avec les liens */}

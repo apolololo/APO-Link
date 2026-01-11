@@ -21,6 +21,7 @@ const DotCanvas = () => {
   const particlesRef = useRef<Particle[]>([]);
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const isPressedRef = useRef(false);
+  const [isPressedState, setIsPressedState] = useState(false);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
   
@@ -34,6 +35,9 @@ const DotCanvas = () => {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      // S'assurer que le canvas a un fond noir
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       initializeParticles();
     };
     
@@ -91,6 +95,7 @@ const DotCanvas = () => {
     
     const handlePressStart = (clientX: number, clientY: number) => {
       isPressedRef.current = true;
+      setIsPressedState(true);
       
       particlesRef.current.forEach(particle => {
         particle.targetX = clientX;
@@ -101,6 +106,7 @@ const DotCanvas = () => {
     
     const handleMouseUp = () => {
       isPressedRef.current = false;
+      setIsPressedState(false);
       
       particlesRef.current.forEach(particle => {
         particle.isTargeting = false;
@@ -341,8 +347,10 @@ const DotCanvas = () => {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full z-0 bg-gradient-radial from-gray-900 to-black pointer-events-none"
-      style={{ pointerEvents: isPressedRef.current ? 'auto' : 'none' }}
+      className="fixed top-0 left-0 w-full h-full bg-black"
+      style={{ 
+        zIndex: 0
+      }}
     />
   );
 };

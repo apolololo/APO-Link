@@ -212,7 +212,7 @@ const CustomCursor = () => {
     <>
       {/* Main cursor outer ring */}
       <motion.div 
-        className="fixed rounded-full border pointer-events-none z-[99999]"
+        className="fixed rounded-full border pointer-events-none z-50"
         style={{ 
           left: x, 
           top: y,
@@ -230,7 +230,7 @@ const CustomCursor = () => {
       
       {/* Main cursor dot */}
       <motion.div 
-        className="fixed rounded-full pointer-events-none z-[99999]"
+        className="fixed rounded-full pointer-events-none z-40"
         style={{ 
           left: x, 
           top: y
@@ -250,7 +250,7 @@ const CustomCursor = () => {
         {trails.map((trail) => (
           <motion.div
             key={trail.id}
-            className="fixed rounded-full pointer-events-none z-[99998]"
+            className="fixed rounded-full pointer-events-none z-30"
             style={{ 
               left: trail.x,
               top: trail.y,
