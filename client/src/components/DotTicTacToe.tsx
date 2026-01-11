@@ -358,10 +358,10 @@ const DotTicTacToe = () => {
   const minimax = (board: Board, depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity): number => {
     // Vérifier si quelqu'un a gagné ou si on a atteint la profondeur maximale
     const result = checkWinner(board);
-    if (result === 'O') return 10 - depth;
-    if (result === 'X') return depth - 10;
+    if (result === 'O') return 100 - depth;
+    if (result === 'X') return depth - 100;
     if (result === 'draw') return 0;
-    if (depth === 0) return evaluateBoard(board);
+    if (depth === 0) return 0; // Don't use heuristic evaluation for extreme mode, rely on terminal states
     
     if (isMaximizing) {
       // Tour de l'IA (maximiser score)

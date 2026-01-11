@@ -96,7 +96,7 @@ export default function DiscordStatus() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md mx-auto mb-6"
+      className="w-full max-w-md mx-auto mb-6 relative z-10"
     >
       <Card className="relative overflow-hidden bg-black/30 backdrop-blur-xl border-white/10 p-4 transition-all hover:bg-black/40 group shadow-lg shadow-black/20">
         <div className="flex items-start gap-4">
