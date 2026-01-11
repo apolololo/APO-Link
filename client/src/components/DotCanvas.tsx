@@ -43,7 +43,6 @@ const DotCanvas = () => {
     };
     
     const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
       const touch = e.touches[0];
       mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
       updateParticles(touch.clientX, touch.clientY);
@@ -86,7 +85,6 @@ const DotCanvas = () => {
     };
     
     const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
       const touch = e.touches[0];
       handlePressStart(touch.clientX, touch.clientY);
     };
@@ -127,7 +125,11 @@ const DotCanvas = () => {
     
     const initializeParticles = () => {
       particlesRef.current = [];
-      const particleCount = Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
+      // Réduire le nombre de particules pour mobile
+      const isMobile = window.innerWidth < 768;
+      const particleCount = isMobile ? 
+        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 40000), 25), 50) :
+        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
       const colors = ["#ffffff", "#dddddd"];
       
       for (let i = 0; i < particleCount; i++) {
@@ -156,15 +158,16 @@ const DotCanvas = () => {
     window.addEventListener("mouseup", handleMouseUp);
     
     // Support tactile
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("touchend", handleMouseUp);
     
     resizeCanvas();
     initializeParticles();
     
     let animationId: number;
-    const maxFps = 60;
+    const isMobile = window.innerWidth < 768;
+    const maxFps = isMobile ? 30 : 60;
     const frameInterval = 1000 / maxFps;
     
     const animate = (timestamp: number) => {
@@ -234,11 +237,12 @@ const DotCanvas = () => {
         if (particle.y < -10) particle.y = canvas.height + 10;
         else if (particle.y > canvas.height + 10) particle.y = -10;
         
-        // Draw particle
+        // Draw particle - optimiser pour mobile
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         
-        if (particle.size > 1.5) {
+        // Désactiver les gradients coûteux sur mobile
+        if (!isMobile && particle.size > 1.5) {
           const gradient = ctx.createRadialGradient(
             particle.x, particle.y, 0,
             particle.x, particle.y, particle.size * 3
@@ -260,7 +264,9 @@ const DotCanvas = () => {
       });
       
       // Connect nearby particles with thinner, more subtle lines
-      if (frameCountRef.current % 2 === 0) {
+      // Réduire la fréquence des connexions sur mobile
+      const connectionFrequency = isMobile ? 4 : 2;
+      if (frameCountRef.current % connectionFrequency === 0) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
         ctx.lineWidth = 0.1;
         
@@ -335,7 +341,8 @@ const DotCanvas = () => {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full z-0 bg-gradient-radial from-gray-900 to-black"
+      className="fixed top-0 left-0 w-full h-full z-0 bg-gradient-radial from-gray-900 to-black pointer-events-none"
+      style={{ pointerEvents: isPressedRef.current ? 'auto' : 'none' }}
     />
   );
 };

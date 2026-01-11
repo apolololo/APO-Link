@@ -22,6 +22,22 @@ const CustomCursor = () => {
   const trailTimerRef = useRef<number | null>(null);
   const [cursorVariant, setCursorVariant] = useState("default");
   const [interactionType, setInteractionType] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Détecter si c'est un appareil mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Ne pas afficher le curseur sur mobile
+  if (isMobile) return null;
   
   // Effect for hover detection with data attributes for interaction types
   useEffect(() => {

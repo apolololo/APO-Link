@@ -17,5 +17,22 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "../dist",
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'motion-vendor': ['framer-motion'],
+          'router-vendor': ['wouter']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
 }));
