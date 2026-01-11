@@ -14,14 +14,13 @@ interface CursorTrail {
 }
 
 const CustomCursor = () => {
-  const { x, y, isActive } = useMousePosition();
+  const { x, y, isActive, isPressed } = useMousePosition();
   const [trails, setTrails] = useState<CursorTrail[]>([]);
   const lastPositionRef = useRef({ x, y });
   const velocityRef = useRef({ x: 0, y: 0 });
   const trailIdRef = useRef(0);
   const trailTimerRef = useRef<number | null>(null);
   const [cursorVariant, setCursorVariant] = useState("default");
-  const [isClicking, setIsClicking] = useState(false);
   const [interactionType, setInteractionType] = useState<string | null>(null);
   
   // Effect for hover detection with data attributes for interaction types
@@ -42,8 +41,8 @@ const CustomCursor = () => {
       setInteractionType(null);
     };
     
-    const handleMouseDown = () => setIsClicking(true);
-    const handleMouseUp = () => setIsClicking(false);
+    const handleMouseDown = () => {};
+    const handleMouseUp = () => {};
     
     // Delegate event listeners
     document.addEventListener("mouseover", handleMouseOver);
@@ -76,16 +75,16 @@ const CustomCursor = () => {
       // Only create trails if moving fast enough and limit creation when FPS might be low
       if (speed > 8 && trails.length < 15) {
         // Simplified trail creation - even smaller and fewer
-        const baseSize = isClicking ? 3 : 1.5;
+        const baseSize = isPressed ? 3 : 1.5;
         
         // Simplified color - only white with basic interaction indication
         let color = "rgba(255, 255, 255, 0.4)";  // Reduced opacity from 0.6 to 0.4
-        if (interactionType && isClicking) {
+        if (interactionType && isPressed) {
           color = "rgba(255, 255, 255, 0.6)";    // Reduced opacity from 0.8 to 0.6
         }
         
         // Reduced trail count
-        const trailCount = isClicking ? 2 : 1;
+        const trailCount = isPressed ? 2 : 1;
         
         for (let i = 0; i < trailCount; i++) {
           if (i > 0 && Math.random() > 0.5) continue; // 50% chance to skip additional trails
@@ -96,7 +95,8 @@ const CustomCursor = () => {
             y, 
             size: baseSize,
             delay: 0, // No delay for better performance
-            color
+            color,
+            rotation: Math.random() * 360
           };
           
           setTrails(prev => [...prev, newTrail]);
@@ -130,9 +130,9 @@ const CustomCursor = () => {
         clearTimeout(trailTimerRef.current);
       }
     };
-  }, [x, y, isActive, isClicking, interactionType, trails.length]);
+  }, [x, y, isActive, isPressed, interactionType, trails.length]);
   
-  // Cursor variants with clicking state
+  // Cursor variants with pressing state
   const variants = {
     default: {
       width: 12,  // Reduced from 16
@@ -144,12 +144,12 @@ const CustomCursor = () => {
       borderColor: "rgba(255, 255, 255, 0.7)"
     },
     hover: {
-      width: isClicking ? 22 : 28, // Reduced from 40 when not clicking
-      height: isClicking ? 22 : 28, // Reduced from 40 when not clicking
+      width: isPressed ? 22 : 28, // Reduced from 40 when not pressing
+      height: isPressed ? 22 : 28, // Reduced from 40 when not pressing
       borderWidth: "2px",
       backgroundColor: "rgba(255, 255, 255, 0.05)",
-      x: isClicking ? -11 : -14, // Adjusted for new size
-      y: isClicking ? -11 : -14, // Adjusted for new size
+      x: isPressed ? -11 : -14, // Adjusted for new size
+      y: isPressed ? -11 : -14, // Adjusted for new size
       borderColor: interactionType ? getInteractionColor() : "rgba(255, 255, 255, 0.7)"
     }
   };
@@ -164,11 +164,11 @@ const CustomCursor = () => {
       backgroundColor: "rgba(255, 255, 255, 0.9)"
     },
     hover: {
-      width: isClicking ? 10 : 6, // Reduced from 8 when not clicking
-      height: isClicking ? 10 : 6, // Reduced from 8 when not clicking
+      width: isPressed ? 10 : 6, // Reduced from 8 when not pressing
+      height: isPressed ? 10 : 6, // Reduced from 8 when not pressing
       opacity: 1,
-      x: isClicking ? -5 : -3, // Adjusted for new size
-      y: isClicking ? -5 : -3, // Adjusted for new size
+      x: isPressed ? -5 : -3, // Adjusted for new size
+      y: isPressed ? -5 : -3, // Adjusted for new size
       backgroundColor: interactionType ? getInteractionColor(true) : "rgba(255, 255, 255, 1)"
     }
   };
@@ -200,7 +200,7 @@ const CustomCursor = () => {
         style={{ 
           left: x, 
           top: y,
-          boxShadow: isClicking ? `0 0 10px ${getInteractionColor(true)}` : "none"
+          boxShadow: isPressed ? `0 0 10px ${getInteractionColor(true)}` : "none"
         }}
         variants={variants}
         animate={cursorVariant}

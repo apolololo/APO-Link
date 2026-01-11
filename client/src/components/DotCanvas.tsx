@@ -39,11 +39,21 @@ const DotCanvas = () => {
     
     const handleMouseMove = (e: MouseEvent) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
-      
+      updateParticles(e.clientX, e.clientY);
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
+      updateParticles(touch.clientX, touch.clientY);
+    };
+    
+    const updateParticles = (clientX: number, clientY: number) => {
       if (isPressedRef.current) {
         particlesRef.current.forEach(particle => {
-          const dx = e.clientX - particle.x;
-          const dy = e.clientY - particle.y;
+          const dx = clientX - particle.x;
+          const dy = clientY - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           // Extremely reduced attraction force
@@ -51,15 +61,15 @@ const DotCanvas = () => {
           particle.speedX += (dx / distance) * attractionForce;
           particle.speedY += (dy / distance) * attractionForce;
           
-          particle.targetX = e.clientX;
-          particle.targetY = e.clientY;
+          particle.targetX = clientX;
+          particle.targetY = clientY;
           particle.isTargeting = true;
         });
       } else {
         // Very gentle repulsion when not pressed
         particlesRef.current.forEach(particle => {
-          const dx = e.clientX - particle.x;
-          const dy = e.clientY - particle.y;
+          const dx = clientX - particle.x;
+          const dy = clientY - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           if (distance < 150) {
@@ -72,11 +82,21 @@ const DotCanvas = () => {
     };
     
     const handleMouseDown = (e: MouseEvent) => {
+      handlePressStart(e.clientX, e.clientY);
+    };
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      handlePressStart(touch.clientX, touch.clientY);
+    };
+    
+    const handlePressStart = (clientX: number, clientY: number) => {
       isPressedRef.current = true;
       
       particlesRef.current.forEach(particle => {
-        particle.targetX = e.clientX;
-        particle.targetY = e.clientY;
+        particle.targetX = clientX;
+        particle.targetY = clientY;
         particle.isTargeting = true;
       });
     };
@@ -134,6 +154,11 @@ const DotCanvas = () => {
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
+    
+    // Support tactile
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleMouseUp);
     
     resizeCanvas();
     initializeParticles();
@@ -300,6 +325,9 @@ const DotCanvas = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleMouseUp);
       cancelAnimationFrame(animationId);
     };
   }, []);
