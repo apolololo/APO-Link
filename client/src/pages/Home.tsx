@@ -5,7 +5,6 @@ import CustomCursor from "@/components/CustomCursor";
 import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
 import CreationsSection from "@/components/CreationsSection";
-import DiscordStatus from "@/components/DiscordStatus";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -49,9 +48,6 @@ export default function Home() {
         {/* Section principale avec les liens */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4">
         <Header />
-        <div className="w-full mt-6">
-          <DiscordStatus />
-        </div>
         <div className="mt-2">
           <SocialGrid />
         </div>
