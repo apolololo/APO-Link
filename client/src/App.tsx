@@ -10,7 +10,7 @@ import Home from "@/pages/Home";
 function getBasePath() {
   // En production sur GitHub Pages, utiliser le nom du repo
   if (import.meta.env.PROD) {
-    return "/apo-reseaux-site";
+    return "/APO-Link";
   }
   return "";
 }
