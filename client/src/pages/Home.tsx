@@ -7,8 +7,11 @@ import MusicPlayer from "@/components/MusicPlayer";
 import CreationsSection from "@/components/CreationsSection";
 import MobileDebugger from "@/components/MobileDebugger";
 import { useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
+  const isMobile = useIsMobile();
+
   // Désactiver la sélection de texte pour une meilleure expérience interactive
   useEffect(() => {
     document.body.style.userSelect = 'none';
@@ -38,16 +41,16 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen">
+    <div className="relative w-full min-h-screen bg-black">
       {/* Débogage mobile */}
-      <MobileDebugger />
+      {isMobile && <MobileDebugger />}
       
-      {/* Fond avec les étoiles - fixe en arrière-plan */}
-      <DotCanvas />
+      {/* Fond avec les étoiles - désactivé sur mobile */}
+      {!isMobile && <DotCanvas />}
       
       {/* Contenu scrollable avec fond transparent */}
       <div className="relative z-10 bg-transparent">
-        <CustomCursor />
+        {!isMobile && <CustomCursor />}
         
         {/* Section principale avec les liens */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -63,11 +66,11 @@ export default function Home() {
         </section>
       </div>
       
-      {/* Mini-jeu discret sur le côté */}
-      <DotTicTacToe />
+      {/* Mini-jeu discret sur le côté - désactivé sur mobile */}
+      {!isMobile && <DotTicTacToe />}
       
-      {/* Lecteur de musique */}
-      <MusicPlayer />
+      {/* Lecteur de musique - désactivé sur mobile */}
+      {!isMobile && <MusicPlayer />}
     </div>
   );
 }
