@@ -1,6 +1,7 @@
 import DotCanvas from "@/components/DotCanvas";
 import Header from "@/components/Header";
 import SocialGrid from "@/components/SocialGrid";
+import CustomCursor from "@/components/CustomCursor";
 import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
 import { useEffect } from "react";
@@ -39,6 +40,9 @@ export default function Home() {
 
   return (
     <div className="relative w-full min-h-screen bg-black">
+      {/* Curseur personnalisé pour PC seulement */}
+      {!isMobile && <CustomCursor />}
+      
       {/* Fond avec les étoiles - désactivé sur mobile */}
       {!isMobile && <DotCanvas />}
       
