@@ -39,9 +39,6 @@ export default function Home() {
 
   return (
     <div className="relative w-full min-h-screen bg-black">
-      {/* Débogage mobile */}
-      {isMobile && <MobileDebugger />}
-      
       {/* Fond avec les étoiles - désactivé sur mobile */}
       {!isMobile && <DotCanvas />}
       
