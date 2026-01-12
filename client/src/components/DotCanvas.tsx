@@ -145,8 +145,8 @@ const DotCanvas = () => {
       // Réduire le nombre de particules pour mobile
       const isMobile = window.innerWidth < 768;
       const particleCount = isMobile ? 
-        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 40000), 25), 50) :
-        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
+        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 45000), 20), 45) :
+        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 30000), 35), 60);
       const colors = ["#ffffff", "#dddddd"];
       
       for (let i = 0; i < particleCount; i++) {
@@ -159,8 +159,8 @@ const DotCanvas = () => {
           y,
           baseSize,
           size: baseSize,
-          speedX: (Math.random() - 0.5) * 0.03,
-          speedY: (Math.random() - 0.5) * 0.03,
+          speedX: (Math.random() - 0.5) * 0.06,
+          speedY: (Math.random() - 0.5) * 0.06,
           opacity: Math.random() * 0.4 + 0.1,
           color: colors[Math.floor(Math.random() * colors.length)],
           homeX: x,
@@ -216,7 +216,7 @@ const DotCanvas = () => {
           
           if (distance > 1) {
             const angle = Math.atan2(dy, dx);
-            const speed = isPressedRef.current ? 0.03 : 0.015;
+            const speed = isPressedRef.current ? 0.06 : 0.03;
             particle.speedX += Math.cos(angle) * speed;
             particle.speedY += Math.sin(angle) * speed;
           }
@@ -240,11 +240,11 @@ const DotCanvas = () => {
         
         // Stronger damping for slower deceleration
         if (particle.isTargeting) {
-          particle.speedX *= 0.98;
-          particle.speedY *= 0.98;
+          particle.speedX *= 0.985;
+          particle.speedY *= 0.985;
         } else {
-          particle.speedX *= 0.995;
-          particle.speedY *= 0.995;
+          particle.speedX *= 0.997;
+          particle.speedY *= 0.997;
         }
         
         // Wrap around screen edges with buffer
@@ -258,36 +258,18 @@ const DotCanvas = () => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         
-        // Désactiver les gradients coûteux sur mobile
-        if (!isMobile && particle.size > 1.5) {
-          const gradient = ctx.createRadialGradient(
-            particle.x, particle.y, 0,
-            particle.x, particle.y, particle.size * 3
-          );
-          gradient.addColorStop(0, particle.color.replace("1)", `${particle.opacity})`));
-          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          
-          ctx.fillStyle = gradient;
-          ctx.fillRect(
-            particle.x - particle.size * 3,
-            particle.y - particle.size * 3,
-            particle.size * 6,
-            particle.size * 6
-          );
-        }
-        
         ctx.fillStyle = particle.color.replace("1)", `${particle.opacity})`);
         ctx.fill();
       });
       
       // Connect nearby particles with thinner, more subtle lines
       // Réduire la fréquence des connexions sur mobile
-      const connectionFrequency = isMobile ? 4 : 2;
-      if (frameCountRef.current % connectionFrequency === 0) {
+      const connectionFrequency = isMobile ? 8 : 6;
+      if (!isPressedRef.current && frameCountRef.current % connectionFrequency === 0) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
         ctx.lineWidth = 0.1;
         
-        const gridSize = 150;
+        const gridSize = 220;
         const grid: { [key: string]: Particle[] } = {};
         
         particlesRef.current.forEach(p => {
@@ -318,7 +300,7 @@ const DotCanvas = () => {
             if (!neighborCell) continue;
             
             for (const p1 of grid[cellKey]) {
-              for (let i = 0; i < neighborCell.length; i += 3) {
+              for (let i = 0; i < neighborCell.length; i += 4) {
                 const p2 = neighborCell[i];
                 if (p1 === p2) continue;
                 
@@ -326,7 +308,7 @@ const DotCanvas = () => {
                 const dy = p1.y - p2.y;
                 const distSquared = dx * dx + dy * dy;
                 
-                if (distSquared < 8100) {
+                if (distSquared < 7000) {
                   ctx.beginPath();
                   ctx.moveTo(p1.x, p1.y);
                   ctx.lineTo(p2.x, p2.y);

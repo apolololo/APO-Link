@@ -21,6 +21,18 @@ const CustomCursor = () => {
         followerRef.current.style.top = `${y}px`;
       }
     };
+    
+    const handleMouseDown = () => {
+      if (followerRef.current) {
+        followerRef.current.style.transform = "translate(-50%, -50%) scale(0.6)";
+      }
+    };
+    
+    const handleMouseUp = () => {
+      if (followerRef.current) {
+        followerRef.current.style.transform = "translate(-50%, -50%) scale(1)";
+      }
+    };
 
     const handleMouseEnter = () => {
       if (cursorRef.current && followerRef.current) {
@@ -37,11 +49,15 @@ const CustomCursor = () => {
     };
 
     document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
     document.addEventListener("mouseenter", handleMouseEnter);
     document.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("mouseenter", handleMouseEnter);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
@@ -58,7 +74,7 @@ const CustomCursor = () => {
       />
       <div
         ref={followerRef}
-        className="fixed w-6 h-6 border border-white rounded-full pointer-events-none z-50 mix-blend-difference transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300"
+        className="fixed w-6 h-6 border border-white rounded-full pointer-events-none z-50 mix-blend-difference transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 ease-out transition-opacity duration-300"
         style={{ opacity: 0 }}
       />
     </>,
