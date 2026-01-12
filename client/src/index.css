@@ -160,13 +160,31 @@
   }
   /* Flottaison légère autorisée pour éléments marqués */
   @keyframes mobileFloat {
-    0% { margin-top: 0 }
-    50% { margin-top: -6px }
-    100% { margin-top: 0 }
+    0% { transform: translateY(0) }
+    50% { transform: translateY(-10px) }
+    100% { transform: translateY(0) }
   }
   .mobile-float {
     position: relative;
-    animation: mobileFloat 6s ease-in-out infinite !important;
+    animation: mobileFloat 7s ease-in-out infinite !important;
+  }
+
+  /* Bouton mobile avec verre et reflet léger */
+  .mobile-glass {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+    position: relative;
+    overflow: hidden;
+  }
+  .mobile-glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
   }
 
   /* Désactiver le curseur personnalisé sur mobile */
@@ -179,7 +197,6 @@
   a, button, [role="button"], .platform-card, .platform-icon, .interactive-shadow {
     transition: none !important;
     animation: none !important;
-    transform: none !important;
     box-shadow: none !important;
     filter: none !important;
   }

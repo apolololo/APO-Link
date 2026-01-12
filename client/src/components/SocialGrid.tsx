@@ -148,7 +148,7 @@ const SocialGrid = () => {
           rel="noopener noreferrer"
           className={
             isMobile
-              ? "flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full"
+              ? "flex items-center gap-2 px-4 py-2 rounded-full mobile-glass"
               : "flex items-center gap-2 px-4 py-2 bg-[#0070BA]/10 rounded-full transition-all duration-300 hover:bg-[#0070BA]/20"
           }
           data-platform="paypal"
