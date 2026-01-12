@@ -100,7 +100,11 @@ const SocialGrid = () => {
                       ? {
                           filter: 'none',
                           textShadow: 'none',
-                          color: 'white'
+                          color: 'white',
+                          willChange: 'transform',
+                          animationDelay: `${(platforms.indexOf(platform) % 7) * 0.4}s`,
+                          animationDuration: `${6 + (platforms.indexOf(platform) % 3)}s`,
+                          animationTimingFunction: 'ease-in-out'
                         }
                       : {
                           animationDuration: `${3 + (platforms.indexOf(platform) % 5) * 0.5}s`,
