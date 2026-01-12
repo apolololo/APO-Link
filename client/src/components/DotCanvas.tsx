@@ -23,6 +23,14 @@ const DotCanvas = () => {
   const isPressedRef = useRef(false);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -107,7 +115,9 @@ const DotCanvas = () => {
     
     const initializeParticles = () => {
       particlesRef.current = [];
-      const particleCount = Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
+      const particleCount = isMobile
+        ? Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 60000), 20), 45)
+        : Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
       const colors = ["#ffffff", "#dddddd"];
       
       for (let i = 0; i < particleCount; i++) {
@@ -131,15 +141,17 @@ const DotCanvas = () => {
     };
     
     window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
+    if (!isMobile) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
     
     resizeCanvas();
     initializeParticles();
     
     let animationId: number;
-    const maxFps = 60;
+    const maxFps = isMobile ? 24 : 60;
     const frameInterval = 1000 / maxFps;
     
     const animate = (timestamp: number) => {
@@ -162,44 +174,47 @@ const DotCanvas = () => {
       
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Update and draw particles with much slower movement
+      // Update and draw particles
       particlesRef.current.forEach(particle => {
-        if (particle.isTargeting && particle.targetX !== undefined && particle.targetY !== undefined) {
-          const dx = particle.targetX - particle.x;
-          const dy = particle.targetY - particle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance > 1) {
-            const angle = Math.atan2(dy, dx);
-            const speed = isPressedRef.current ? 0.03 : 0.015;
-            particle.speedX += Math.cos(angle) * speed;
-            particle.speedY += Math.sin(angle) * speed;
-          }
-        } else {
-          // Move towards home position very slowly
-          const dx = particle.homeX - particle.x;
-          const dy = particle.homeY - particle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance > 1) {
-            const angle = Math.atan2(dy, dx);
-            const speed = 0.001;
-            particle.speedX += Math.cos(angle) * speed;
-            particle.speedY += Math.sin(angle) * speed;
+        if (!isMobile) {
+          if (particle.isTargeting && particle.targetX !== undefined && particle.targetY !== undefined) {
+            const dx = particle.targetX - particle.x;
+            const dy = particle.targetY - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 1) {
+              const angle = Math.atan2(dy, dx);
+              const speed = isPressedRef.current ? 0.03 : 0.015;
+              particle.speedX += Math.cos(angle) * speed;
+              particle.speedY += Math.sin(angle) * speed;
+            }
+          } else {
+            const dx = particle.homeX - particle.x;
+            const dy = particle.homeY - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 1) {
+              const angle = Math.atan2(dy, dx);
+              const speed = 0.001;
+              particle.speedX += Math.cos(angle) * speed;
+              particle.speedY += Math.sin(angle) * speed;
+            }
           }
         }
         
-        // Update position with slower movement
+        // Update position
         particle.x += particle.speedX;
         particle.y += particle.speedY;
         
-        // Stronger damping for slower deceleration
-        if (particle.isTargeting) {
-          particle.speedX *= 0.98;
-          particle.speedY *= 0.98;
+        if (!isMobile) {
+          if (particle.isTargeting) {
+            particle.speedX *= 0.98;
+            particle.speedY *= 0.98;
+          } else {
+            particle.speedX *= 0.995;
+            particle.speedY *= 0.995;
+          }
         } else {
-          particle.speedX *= 0.995;
-          particle.speedY *= 0.995;
+          particle.speedX *= 0.997;
+          particle.speedY *= 0.997;
         }
         
         // Wrap around screen edges with buffer
@@ -213,7 +228,7 @@ const DotCanvas = () => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         
-        if (particle.size > 1.5) {
+        if (!isMobile && particle.size > 1.5) {
           const gradient = ctx.createRadialGradient(
             particle.x, particle.y, 0,
             particle.x, particle.y, particle.size * 3
@@ -234,8 +249,8 @@ const DotCanvas = () => {
         ctx.fill();
       });
       
-      // Connect nearby particles with thinner, more subtle lines
-      if (frameCountRef.current % 2 === 0) {
+      // Connect nearby particles
+      if (!isMobile && frameCountRef.current % 2 === 0) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
         ctx.lineWidth = 0.1;
         
@@ -297,12 +312,14 @@ const DotCanvas = () => {
     
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
+      if (!isMobile) {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mouseup", handleMouseUp);
+      }
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [isMobile]);
   
   return (
     <canvas 

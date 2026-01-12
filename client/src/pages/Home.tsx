@@ -2,7 +2,6 @@ import DotCanvas from "@/components/DotCanvas";
 import Header from "@/components/Header";
 import SocialGrid from "@/components/SocialGrid";
 import CustomCursor from "@/components/CustomCursor";
-import DotTicTacToe from "../components/DotTicTacToe";
 import MusicPlayer from "@/components/MusicPlayer";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -40,7 +39,7 @@ export default function Home() {
   return (
     <div className="relative w-full">
       {/* Fond avec les étoiles - fixe en arrière-plan */}
-      {!isMobile && <DotCanvas />}
+      <DotCanvas />
       
       {/* Contenu scrollable */}
       <div className="relative z-10">
@@ -55,9 +54,6 @@ export default function Home() {
         </section>
         
       </div>
-      
-      {/* Mini-jeu discret sur le côté */}
-      <DotTicTacToe />
       
       {/* Lecteur de musique */}
       <MusicPlayer />
