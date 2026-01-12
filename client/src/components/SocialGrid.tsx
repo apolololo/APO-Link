@@ -92,7 +92,7 @@ const SocialGrid = () => {
                 <div 
                   className={
                     isMobile
-                      ? "relative text-white text-3xl sm:text-4xl"
+                      ? "relative text-white text-3xl sm:text-4xl mobile-float"
                       : "relative text-white text-3xl sm:text-4xl transform transition-all duration-300 hover:scale-125 hover:filter animate-float"
                   }
                   style={
@@ -148,7 +148,7 @@ const SocialGrid = () => {
           rel="noopener noreferrer"
           className={
             isMobile
-              ? "flex items-center gap-2 px-4 py-2 rounded-full"
+              ? "flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full"
               : "flex items-center gap-2 px-4 py-2 bg-[#0070BA]/10 rounded-full transition-all duration-300 hover:bg-[#0070BA]/20"
           }
           data-platform="paypal"

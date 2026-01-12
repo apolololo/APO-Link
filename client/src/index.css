@@ -158,6 +158,16 @@
   .animate-float, .animate-gentle-bounce, [class*="animate-"] {
     animation: none !important;
   }
+  /* Flottaison légère autorisée pour éléments marqués */
+  @keyframes mobileFloat {
+    0% { margin-top: 0 }
+    50% { margin-top: -6px }
+    100% { margin-top: 0 }
+  }
+  .mobile-float {
+    position: relative;
+    animation: mobileFloat 6s ease-in-out infinite !important;
+  }
 
   /* Désactiver le curseur personnalisé sur mobile */
   * {
