@@ -38,6 +38,7 @@ function Router() {
     const onTouchEnd = (e: TouchEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
+      document.body.classList.remove('touching');
       if (t.tagName === 'A' || t.tagName === 'BUTTON') {
         (t as HTMLButtonElement).blur?.();
         t.removeAttribute('aria-pressed');
@@ -45,8 +46,15 @@ function Router() {
       document.activeElement instanceof HTMLElement && document.activeElement.blur();
       window.dispatchEvent(new MouseEvent('mouseup'));
     };
+    const onTouchStart = () => {
+      document.body.classList.add('touching');
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
     document.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => document.removeEventListener('touchend', onTouchEnd);
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
   }, []);
   
   return (

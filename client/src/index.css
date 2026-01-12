@@ -137,12 +137,32 @@
   * {
     cursor: auto !important;
   }
+  
+  /* Neutraliser les effets hover persistants sur mobile */
+  *:hover {
+    filter: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .group:hover * {
+    filter: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
   a:hover, button:hover {
     filter: none !important;
     transform: none !important;
   }
   .interactive-shadow:hover {
     filter: none !important;
+  }
+  
+  /* Pendant un toucher actif, supprimer tout état hover */
+  body.touching *:hover,
+  body.touching .group:hover * {
+    filter: none !important;
+    transform: none !important;
+    box-shadow: none !important;
   }
   
   /* S'assurer que le body est visible sur mobile */

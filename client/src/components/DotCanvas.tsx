@@ -201,6 +201,11 @@ const DotCanvas = () => {
         }
         
         // Update position
+        if (isMobile) {
+          const drift = 0.02;
+          particle.speedX += (Math.random() - 0.5) * drift;
+          particle.speedY += (Math.random() - 0.5) * drift;
+        }
         particle.x += particle.speedX;
         particle.y += particle.speedY;
         
@@ -213,8 +218,8 @@ const DotCanvas = () => {
             particle.speedY *= 0.995;
           }
         } else {
-          particle.speedX *= 0.997;
-          particle.speedY *= 0.997;
+          particle.speedX *= 0.999;
+          particle.speedY *= 0.999;
         }
         
         // Wrap around screen edges with buffer
