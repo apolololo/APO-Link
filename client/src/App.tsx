@@ -46,14 +46,33 @@ function Router() {
       document.activeElement instanceof HTMLElement && document.activeElement.blur();
       window.dispatchEvent(new MouseEvent('mouseup'));
     };
-    const onTouchStart = () => {
+    const onTouchStart = (e: TouchEvent) => {
       document.body.classList.add('touching');
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'A' || t.tagName === 'BUTTON')) {
+        t.removeAttribute('aria-pressed');
+      }
+    };
+    const onClick = (e: MouseEvent) => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'A' || t.tagName === 'BUTTON')) {
+        (t as HTMLButtonElement).blur?.();
+        t.removeAttribute('aria-pressed');
+        document.activeElement instanceof HTMLElement && document.activeElement.blur();
+      }
     };
     document.addEventListener('touchstart', onTouchStart, { passive: true });
     document.addEventListener('touchend', onTouchEnd, { passive: true });
+    document.addEventListener('click', onClick, { passive: true, capture: true });
     return () => {
       document.removeEventListener('touchstart', onTouchStart);
       document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('click', onClick, { capture: true } as any);
     };
   }, []);
   

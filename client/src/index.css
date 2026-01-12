@@ -163,6 +163,14 @@
     background-color: transparent !important;
     border-color: inherit !important;
     outline: none !important;
+    box-shadow: none !important;
+  }
+  a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .ring-1, .ring-2, .ring, .focus-visible\\:ring-2, .focus-visible\\:ring {
+    box-shadow: none !important;
   }
   
   /* Neutraliser les effets hover persistants sur mobile */
