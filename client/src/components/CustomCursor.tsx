@@ -10,17 +10,15 @@ const CustomCursor = () => {
     if (isMobile) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (cursorRef.current && followerRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`;
-        cursorRef.current.style.top = `${e.clientY}px`;
-        
-        // Petit délai pour l'effet de traînée du cercle
-        setTimeout(() => {
-          if (followerRef.current) {
-            followerRef.current.style.left = `${e.clientX}px`;
-            followerRef.current.style.top = `${e.clientY}px`;
-          }
-        }, 100);
+      const x = e.clientX;
+      const y = e.clientY;
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${x}px`;
+        cursorRef.current.style.top = `${y}px`;
+      }
+      if (followerRef.current) {
+        followerRef.current.style.left = `${x}px`;
+        followerRef.current.style.top = `${y}px`;
       }
     };
 
