@@ -136,6 +136,7 @@
   /* Désactiver le curseur personnalisé sur mobile */
   * {
     cursor: auto !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
   
   /* Désactiver transitions/animations sur éléments interactifs */
@@ -150,8 +151,17 @@
     transform: none !important;
     box-shadow: none !important;
     filter: none !important;
+    color: inherit !important;
+    background-color: transparent !important;
+    border-color: inherit !important;
   }
   :focus {
+    outline: none !important;
+  }
+  a:focus, button:focus, a:visited {
+    color: inherit !important;
+    background-color: transparent !important;
+    border-color: inherit !important;
     outline: none !important;
   }
   

@@ -175,8 +175,15 @@ export default function MusicPlayer() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    const handleTouchStart = (event: TouchEvent) => {
+      if (playerRef.current && !playerRef.current.contains(event.target as Node)) {
+        setIsExpanded(false);
+      }
+    };
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchStart);
     };
   }, []);
 
@@ -228,49 +235,51 @@ export default function MusicPlayer() {
         <div className="relative flex items-center">
           <div 
             className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 z-10"
+            onClick={() => setIsExpanded((v) => !v)}
           >
             <Music className="h-5 w-5 text-white/80" />
           </div>
-          <div className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10">
-          <audio
-            ref={audioRef}
-            src={tracks[currentTrack]}
-            onEnded={handleTrackEnd}
-            // Removed autoPlay={true} to handle it via JS for better control
-          />
+          {isExpanded && (
+            <div className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10">
+              <audio
+                ref={audioRef}
+                src={tracks[currentTrack]}
+                onEnded={handleTrackEnd}
+              />
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:text-white/80 h-8 w-8 ml-2"
-            onClick={toggleMute}
-          >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="h-4 w-4" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-          </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-white/80 h-8 w-8 ml-2"
+                onClick={toggleMute}
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="h-4 w-4" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+              </Button>
 
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={handleVolumeChange}
-            className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-          />
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={handleVolumeChange}
+                className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+              />
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:text-white/80 h-8 w-8"
-            onClick={skipTrack}
-          >
-            <SkipForward className="h-4 w-4" />
-          </Button>
-          </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-white/80 h-8 w-8"
+                onClick={skipTrack}
+              >
+                <SkipForward className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <motion.div
