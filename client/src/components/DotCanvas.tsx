@@ -21,22 +21,10 @@ const DotCanvas = () => {
   const particlesRef = useRef<Particle[]>([]);
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const isPressedRef = useRef(false);
-  const [isPressedState, setIsPressedState] = useState(false);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
-  const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
-    // Détecter si on est sur mobile
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      return mobile;
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -46,28 +34,16 @@ const DotCanvas = () => {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      // S'assurer que le canvas a un fond noir
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
       initializeParticles();
     };
     
     const handleMouseMove = (e: MouseEvent) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
-      updateParticles(e.clientX, e.clientY);
-    };
-    
-    const handleTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
-      updateParticles(touch.clientX, touch.clientY);
-    };
-    
-    const updateParticles = (clientX: number, clientY: number) => {
+      
       if (isPressedRef.current) {
         particlesRef.current.forEach(particle => {
-          const dx = clientX - particle.x;
-          const dy = clientY - particle.y;
+          const dx = e.clientX - particle.x;
+          const dy = e.clientY - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           // Extremely reduced attraction force
@@ -75,15 +51,15 @@ const DotCanvas = () => {
           particle.speedX += (dx / distance) * attractionForce;
           particle.speedY += (dy / distance) * attractionForce;
           
-          particle.targetX = clientX;
-          particle.targetY = clientY;
+          particle.targetX = e.clientX;
+          particle.targetY = e.clientY;
           particle.isTargeting = true;
         });
       } else {
         // Very gentle repulsion when not pressed
         particlesRef.current.forEach(particle => {
-          const dx = clientX - particle.x;
-          const dy = clientY - particle.y;
+          const dx = e.clientX - particle.x;
+          const dy = e.clientY - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           if (distance < 150) {
@@ -96,28 +72,17 @@ const DotCanvas = () => {
     };
     
     const handleMouseDown = (e: MouseEvent) => {
-      handlePressStart(e.clientX, e.clientY);
-    };
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      handlePressStart(touch.clientX, touch.clientY);
-    };
-    
-    const handlePressStart = (clientX: number, clientY: number) => {
       isPressedRef.current = true;
-      setIsPressedState(true);
       
       particlesRef.current.forEach(particle => {
-        particle.targetX = clientX;
-        particle.targetY = clientY;
+        particle.targetX = e.clientX;
+        particle.targetY = e.clientY;
         particle.isTargeting = true;
       });
     };
     
     const handleMouseUp = () => {
       isPressedRef.current = false;
-      setIsPressedState(false);
       
       particlesRef.current.forEach(particle => {
         particle.isTargeting = false;
@@ -142,11 +107,7 @@ const DotCanvas = () => {
     
     const initializeParticles = () => {
       particlesRef.current = [];
-      // Réduire le nombre de particules pour mobile
-      const isMobile = window.innerWidth < 768;
-      const particleCount = isMobile ? 
-        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 45000), 20), 45) :
-        Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 30000), 35), 60);
+      const particleCount = Math.min(Math.max(Math.floor((canvas.width * canvas.height) / 25000), 40), 80);
       const colors = ["#ffffff", "#dddddd"];
       
       for (let i = 0; i < particleCount; i++) {
@@ -159,8 +120,8 @@ const DotCanvas = () => {
           y,
           baseSize,
           size: baseSize,
-          speedX: (Math.random() - 0.5) * 0.06,
-          speedY: (Math.random() - 0.5) * 0.06,
+          speedX: (Math.random() - 0.5) * 0.03,
+          speedY: (Math.random() - 0.5) * 0.03,
           opacity: Math.random() * 0.4 + 0.1,
           color: colors[Math.floor(Math.random() * colors.length)],
           homeX: x,
@@ -174,17 +135,11 @@ const DotCanvas = () => {
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
     
-    // Support tactile
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("touchend", handleMouseUp);
-    
     resizeCanvas();
     initializeParticles();
     
     let animationId: number;
-    const isMobile = window.innerWidth < 768;
-    const maxFps = isMobile ? 30 : 60;
+    const maxFps = 60;
     const frameInterval = 1000 / maxFps;
     
     const animate = (timestamp: number) => {
@@ -216,7 +171,7 @@ const DotCanvas = () => {
           
           if (distance > 1) {
             const angle = Math.atan2(dy, dx);
-            const speed = isPressedRef.current ? 0.06 : 0.03;
+            const speed = isPressedRef.current ? 0.03 : 0.015;
             particle.speedX += Math.cos(angle) * speed;
             particle.speedY += Math.sin(angle) * speed;
           }
@@ -240,11 +195,11 @@ const DotCanvas = () => {
         
         // Stronger damping for slower deceleration
         if (particle.isTargeting) {
-          particle.speedX *= 0.985;
-          particle.speedY *= 0.985;
+          particle.speedX *= 0.98;
+          particle.speedY *= 0.98;
         } else {
-          particle.speedX *= 0.997;
-          particle.speedY *= 0.997;
+          particle.speedX *= 0.995;
+          particle.speedY *= 0.995;
         }
         
         // Wrap around screen edges with buffer
@@ -254,22 +209,37 @@ const DotCanvas = () => {
         if (particle.y < -10) particle.y = canvas.height + 10;
         else if (particle.y > canvas.height + 10) particle.y = -10;
         
-        // Draw particle - optimiser pour mobile
+        // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        
+        if (particle.size > 1.5) {
+          const gradient = ctx.createRadialGradient(
+            particle.x, particle.y, 0,
+            particle.x, particle.y, particle.size * 3
+          );
+          gradient.addColorStop(0, particle.color.replace("1)", `${particle.opacity})`));
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(
+            particle.x - particle.size * 3,
+            particle.y - particle.size * 3,
+            particle.size * 6,
+            particle.size * 6
+          );
+        }
         
         ctx.fillStyle = particle.color.replace("1)", `${particle.opacity})`);
         ctx.fill();
       });
       
       // Connect nearby particles with thinner, more subtle lines
-      // Réduire la fréquence des connexions sur mobile
-      const connectionFrequency = isMobile ? 8 : 6;
-      if (!isPressedRef.current && frameCountRef.current % connectionFrequency === 0) {
+      if (frameCountRef.current % 2 === 0) {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
         ctx.lineWidth = 0.1;
         
-        const gridSize = 220;
+        const gridSize = 150;
         const grid: { [key: string]: Particle[] } = {};
         
         particlesRef.current.forEach(p => {
@@ -300,7 +270,7 @@ const DotCanvas = () => {
             if (!neighborCell) continue;
             
             for (const p1 of grid[cellKey]) {
-              for (let i = 0; i < neighborCell.length; i += 4) {
+              for (let i = 0; i < neighborCell.length; i += 3) {
                 const p2 = neighborCell[i];
                 if (p1 === p2) continue;
                 
@@ -308,7 +278,7 @@ const DotCanvas = () => {
                 const dy = p1.y - p2.y;
                 const distSquared = dx * dx + dy * dy;
                 
-                if (distSquared < 7000) {
+                if (distSquared < 8100) {
                   ctx.beginPath();
                   ctx.moveTo(p1.x, p1.y);
                   ctx.lineTo(p2.x, p2.y);
@@ -330,37 +300,14 @@ const DotCanvas = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleMouseUp);
-      window.removeEventListener('resize', checkMobile);
       cancelAnimationFrame(animationId);
     };
   }, []);
   
-  // Sur mobile, réduire considérablement les effets pour économiser la batterie
-  if (isMobile) {
-    return (
-      <canvas
-        ref={canvasRef}
-        className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
-        style={{ 
-          background: '#000000',
-          opacity: 0.3, // Très faible opacité sur mobile
-          display: 'none' // Cacher complètement le canvas sur mobile
-        }}
-      />
-    );
-  }
-
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
-      style={{ 
-        background: '#000000',
-        opacity: 0.7
-      }}
+    <canvas 
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full z-0 bg-gradient-radial from-gray-900 to-black"
     />
   );
 };
