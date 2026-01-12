@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Volume2, VolumeX, SkipForward, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const GITHUB_MUSIC_URL = 'https://raw.githubusercontent.com/apolololo/APO-Link/main/musique';
 
 export default function MusicPlayer() {
+  const isMobile = useIsMobile();
   const [volume, setVolume] = useState(0.5);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
@@ -219,35 +221,17 @@ export default function MusicPlayer() {
     <div 
       className="fixed bottom-8 left-8 z-50" 
       ref={playerRef}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseEnter={() => !isMobile && setIsExpanded(true)}
+      onMouseLeave={() => !isMobile && setIsExpanded(false)}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative flex items-center"
-      >
-        <div 
-          className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <Music className="h-5 w-5 text-white/80" />
-        </div>
-
-        <motion.div
-          initial={{ width: 0, opacity: 0 }}
-          animate={{ 
-            width: isExpanded ? "auto" : 0, 
-            opacity: isExpanded ? 1 : 0,
-            x: isExpanded ? 0 : -10
-          }}
-          transition={{ 
-            duration: 0.3, 
-            ease: "easeInOut" 
-          }}
-          className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
-        >
+      {isMobile ? (
+        <div className="relative flex items-center">
+          <div 
+            className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 z-10"
+          >
+            <Music className="h-5 w-5 text-white/80" />
+          </div>
+          <div className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10">
           <audio
             ref={audioRef}
             src={tracks[currentTrack]}
@@ -286,8 +270,76 @@ export default function MusicPlayer() {
           >
             <SkipForward className="h-4 w-4" />
           </Button>
+          </div>
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative flex items-center"
+        >
+          <div 
+            className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <Music className="h-5 w-5 text-white/80" />
+          </div>
+
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ 
+              width: isExpanded ? "auto" : 0, 
+              opacity: isExpanded ? 1 : 0,
+              x: isExpanded ? 0 : -10
+            }}
+            transition={{ 
+              duration: 0.3, 
+              ease: "easeInOut" 
+            }}
+            className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
+          >
+            <audio
+              ref={audioRef}
+              src={tracks[currentTrack]}
+              onEnded={handleTrackEnd}
+              // Removed autoPlay={true} to handle it via JS for better control
+            />
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:text-white/80 h-8 w-8 ml-2"
+              onClick={toggleMute}
+            >
+              {isMuted || volume === 0 ? (
+                <VolumeX className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </Button>
+
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            />
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:text-white/80 h-8 w-8"
+              onClick={skipTrack}
+            >
+              <SkipForward className="h-4 w-4" />
+            </Button>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </div>
   );
 }

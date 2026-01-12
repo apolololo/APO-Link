@@ -138,6 +138,23 @@
     cursor: auto !important;
   }
   
+  /* Désactiver transitions/animations sur éléments interactifs */
+  a, button, [role="button"], .platform-card, .platform-icon, .interactive-shadow {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  a:active, button:active {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  :focus {
+    outline: none !important;
+  }
+  
   /* Neutraliser les effets hover persistants sur mobile */
   *:hover {
     filter: none !important;
