@@ -26,10 +26,12 @@ const DotCanvas = () => {
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const MOBILE_BREAKPOINT = 768;
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, []);
   
   useEffect(() => {
@@ -140,11 +142,15 @@ const DotCanvas = () => {
       }
     };
     
-    window.addEventListener("resize", resizeCanvas);
     if (!isMobile) {
+      window.addEventListener("resize", resizeCanvas);
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mousedown", handleMouseDown);
       window.addEventListener("mouseup", handleMouseUp);
+    } else {
+      // Sur mobile, ignorer les changements de taille dus au zoom (pinch)
+      // mais réagir à l'orientation
+      window.addEventListener("orientationchange", resizeCanvas);
     }
     
     resizeCanvas();
@@ -316,11 +322,13 @@ const DotCanvas = () => {
     animationId = requestAnimationFrame(animate);
     
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
       if (!isMobile) {
+        window.removeEventListener("resize", resizeCanvas);
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mousedown", handleMouseDown);
         window.removeEventListener("mouseup", handleMouseUp);
+      } else {
+        window.removeEventListener("orientationchange", resizeCanvas);
       }
       cancelAnimationFrame(animationId);
     };

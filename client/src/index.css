@@ -133,14 +133,13 @@
 
 /* Styles spécifiques pour mobile */
 @media (max-width: 768px) {
-  /* Neutraliser totalement couleurs et animations des liens/icônes/boutons */
-  a, button, [role="button"], .group, .group * {
+  /* Neutraliser couleurs et animations des liens/icônes/boutons, sauf .mobile-float */
+  a, button, [role="button"], .group, .group *:not(.mobile-float) {
     color: inherit !important;
     background: transparent !important;
     border-color: inherit !important;
     transition: none !important;
     animation: none !important;
-    transform: none !important;
     box-shadow: none !important;
     filter: none !important;
   }
