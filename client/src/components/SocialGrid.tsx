@@ -9,6 +9,7 @@ import {
   SiPaypal
 } from "react-icons/si";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Platform {
   name: string;
@@ -19,6 +20,7 @@ interface Platform {
 }
 
 const SocialGrid = () => {
+  const isMobile = useIsMobile();
   const platforms: Platform[] = [
     {
       name: "Twitch",
@@ -88,23 +90,45 @@ const SocialGrid = () => {
             >
               <div className="flex items-center justify-center">
                 <div 
-                  className="relative text-white text-3xl sm:text-4xl transform transition-all duration-300 hover:scale-125 hover:filter animate-float"
-                  style={{
-                    animationDuration: `${3 + (platforms.indexOf(platform) % 5) * 0.5}s`,
-                    filter: 'brightness(1)',
-                    textShadow: '0 0 5px rgba(255,255,255,0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.filter = `drop-shadow(0 0 8px rgba(${platform.rgbColor},0.6))`;
-                    e.currentTarget.style.color = platform.color;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.filter = 'brightness(1)';
-                    e.currentTarget.style.color = 'white';
-                  }}
+                  className={
+                    isMobile
+                      ? "relative text-white text-3xl sm:text-4xl"
+                      : "relative text-white text-3xl sm:text-4xl transform transition-all duration-300 hover:scale-125 hover:filter animate-float"
+                  }
+                  style={
+                    isMobile
+                      ? {
+                          filter: 'none',
+                          textShadow: 'none',
+                          color: 'white'
+                        }
+                      : {
+                          animationDuration: `${3 + (platforms.indexOf(platform) % 5) * 0.5}s`,
+                          filter: 'brightness(1)',
+                          textShadow: '0 0 5px rgba(255,255,255,0.3)'
+                        }
+                  }
+                  onMouseEnter={
+                    isMobile
+                      ? undefined
+                      : (e) => {
+                          e.currentTarget.style.filter = `drop-shadow(0 0 8px rgba(${platform.rgbColor},0.6))`;
+                          e.currentTarget.style.color = platform.color;
+                        }
+                  }
+                  onMouseLeave={
+                    isMobile
+                      ? undefined
+                      : (e) => {
+                          e.currentTarget.style.filter = 'brightness(1)';
+                          e.currentTarget.style.color = 'white';
+                        }
+                  }
                 >
                   <Icon />
-                  <div className="absolute inset-0 opacity-0 hover:opacity-20 rounded-full blur-xl transition-opacity duration-300"></div>
+                  {!isMobile && (
+                    <div className="absolute inset-0 opacity-0 hover:opacity-20 rounded-full blur-xl transition-opacity duration-300"></div>
+                  )}
                 </div>
               </div>
             </a>
@@ -122,10 +146,14 @@ const SocialGrid = () => {
           href="https://streamelements.com/tryh_apo/tip"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 bg-[#0070BA]/10 rounded-full transition-all duration-300 hover:bg-[#0070BA]/20"
+          className={
+            isMobile
+              ? "flex items-center gap-2 px-4 py-2 rounded-full"
+              : "flex items-center gap-2 px-4 py-2 bg-[#0070BA]/10 rounded-full transition-all duration-300 hover:bg-[#0070BA]/20"
+          }
           data-platform="paypal"
         >
-          <SiPaypal className="text-[#0070BA] text-sm" />
+          <SiPaypal className={isMobile ? "text-white/90 text-sm" : "text-[#0070BA] text-sm"} />
           <span className="text-white/80 text-sm">Me soutenir</span>
         </a>
       </motion.div>

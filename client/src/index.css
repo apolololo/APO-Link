@@ -133,6 +133,28 @@
 
 /* Styles spécifiques pour mobile */
 @media (max-width: 768px) {
+  /* Neutraliser totalement couleurs et animations des liens/icônes/boutons */
+  a, button, [role="button"], .group, .group * {
+    color: inherit !important;
+    background: transparent !important;
+    border-color: inherit !important;
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  a svg, button svg, [role="button"] svg {
+    color: inherit !important;
+    stroke: currentColor !important;
+    fill: none !important;
+    transition: none !important;
+  }
+  /* Désactiver toutes classes d'animation courantes */
+  .animate-float, .animate-gentle-bounce, [class*="animate-"] {
+    animation: none !important;
+  }
+
   /* Désactiver le curseur personnalisé sur mobile */
   * {
     cursor: auto !important;
