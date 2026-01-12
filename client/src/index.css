@@ -137,6 +137,13 @@
   * {
     cursor: auto !important;
   }
+  a:hover, button:hover {
+    filter: none !important;
+    transform: none !important;
+  }
+  .interactive-shadow:hover {
+    filter: none !important;
+  }
   
   /* S'assurer que le body est visible sur mobile */
   body {

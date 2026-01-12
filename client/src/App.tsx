@@ -34,6 +34,21 @@ function Router() {
     return () => window.removeEventListener('resize', checkMobile);
   }, [basePath]);
   
+  useEffect(() => {
+    const onTouchEnd = (e: TouchEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.tagName === 'A' || t.tagName === 'BUTTON') {
+        (t as HTMLButtonElement).blur?.();
+        t.removeAttribute('aria-pressed');
+      }
+      document.activeElement instanceof HTMLElement && document.activeElement.blur();
+      window.dispatchEvent(new MouseEvent('mouseup'));
+    };
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => document.removeEventListener('touchend', onTouchEnd);
+  }, []);
+  
   return (
     <WouterRouter base={basePath}>
     <Switch>
