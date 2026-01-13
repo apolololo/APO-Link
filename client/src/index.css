@@ -133,8 +133,8 @@
 
 /* Styles spécifiques pour mobile */
 @media (max-width: 768px) {
-  /* Neutraliser couleurs et animations des liens/icônes/boutons, sauf .mobile-float */
-  a, button, [role="button"], .group, .group *:not(.mobile-float) {
+  /* Neutraliser couleurs et animations des liens/icônes/boutons, sauf .mobile-float/.animate-float */
+  a, button, [role="button"], .group, .group *:not(.mobile-float):not(.animate-float) {
     color: inherit !important;
     background: transparent !important;
     border-color: inherit !important;
@@ -153,9 +153,12 @@
     stroke: currentColor !important;
     transition: none !important;
   }
-  /* Désactiver toutes classes d'animation courantes */
-  .animate-float, .animate-gentle-bounce, [class*="animate-"] {
+  /* Désactiver la plupart des animations, sauf la flottaison des icônes */
+  .animate-gentle-bounce, [class*="animate-"]:not(.animate-float) {
     animation: none !important;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite !important;
   }
   /* Flottaison légère autorisée pour éléments marqués */
   @keyframes mobileFloat {

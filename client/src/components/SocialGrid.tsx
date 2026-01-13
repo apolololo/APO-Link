@@ -92,7 +92,7 @@ const SocialGrid = () => {
                 <div 
                   className={
                     isMobile
-                      ? "relative text-white text-3xl sm:text-4xl mobile-float"
+                      ? "relative text-white text-3xl sm:text-4xl mobile-float animate-float"
                       : "relative text-white text-3xl sm:text-4xl transform transition-all duration-300 hover:scale-125 hover:filter animate-float"
                   }
                   style={
