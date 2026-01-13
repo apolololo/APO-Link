@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useMousePosition } from "@/lib/useMousePosition";
 import { motion, AnimatePresence } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CursorTrail {
   id: number;
@@ -14,6 +15,8 @@ interface CursorTrail {
 }
 
 const CustomCursor = () => {
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
   const { x, y, isActive } = useMousePosition();
   const [trails, setTrails] = useState<CursorTrail[]>([]);
   const lastPositionRef = useRef({ x, y });

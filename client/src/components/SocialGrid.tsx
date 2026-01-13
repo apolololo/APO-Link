@@ -92,7 +92,7 @@ const SocialGrid = () => {
                 <div 
                   className={
                     isMobile
-                      ? "relative text-white text-3xl sm:text-4xl mobile-float animate-float"
+                      ? "relative text-white text-3xl sm:text-4xl"
                       : "relative text-white text-3xl sm:text-4xl transform transition-all duration-300 hover:scale-125 hover:filter animate-float"
                   }
                   style={
@@ -100,11 +100,7 @@ const SocialGrid = () => {
                       ? {
                           filter: 'none',
                           textShadow: 'none',
-                          color: 'white',
-                          willChange: 'transform',
-                          animationDelay: `${(platforms.indexOf(platform) % 7) * 0.4}s`,
-                          animationDuration: `${6 + (platforms.indexOf(platform) % 3)}s`,
-                          animationTimingFunction: 'ease-in-out'
+                          color: 'white'
                         }
                       : {
                           animationDuration: `${3 + (platforms.indexOf(platform) % 5) * 0.5}s`,

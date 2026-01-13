@@ -45,6 +45,9 @@ const DotCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       initializeParticles();
+      if (isMobile) {
+        drawStatic();
+      }
     };
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -142,6 +145,16 @@ const DotCanvas = () => {
       }
     };
     
+    const drawStatic = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesRef.current.forEach(particle => {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color.replace("1)", `${particle.opacity})`);
+        ctx.fill();
+      });
+    };
+    
     if (!isMobile) {
       window.addEventListener("resize", resizeCanvas);
       window.addEventListener("mousemove", handleMouseMove);
@@ -161,6 +174,9 @@ const DotCanvas = () => {
     const frameInterval = 1000 / maxFps;
     
     const animate = (timestamp: number) => {
+      if (isMobile) {
+        return;
+      }
       if (!lastFrameTimeRef.current) {
         lastFrameTimeRef.current = timestamp;
       }
@@ -319,7 +335,11 @@ const DotCanvas = () => {
       animationId = requestAnimationFrame(animate);
     };
     
-    animationId = requestAnimationFrame(animate);
+    if (!isMobile) {
+      animationId = requestAnimationFrame(animate);
+    } else {
+      drawStatic();
+    }
     
     return () => {
       if (!isMobile) {

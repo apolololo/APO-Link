@@ -133,8 +133,7 @@
 
 /* Styles spécifiques pour mobile */
 @media (max-width: 768px) {
-  /* Neutraliser couleurs et animations des liens/icônes/boutons, sauf .mobile-float/.animate-float */
-  a, button, [role="button"], .group, .group *:not(.mobile-float):not(.animate-float) {
+  a, button, [role="button"], .group, .group * {
     color: inherit !important;
     background: transparent !important;
     border-color: inherit !important;
@@ -153,22 +152,9 @@
     stroke: currentColor !important;
     transition: none !important;
   }
-  /* Désactiver la plupart des animations, sauf la flottaison des icônes */
-  .animate-gentle-bounce, [class*="animate-"]:not(.animate-float) {
+  /* Désactiver toutes les animations */
+  .animate-gentle-bounce, [class*="animate-"] {
     animation: none !important;
-  }
-  .animate-float {
-    animation: float 6s ease-in-out infinite !important;
-  }
-  /* Flottaison légère autorisée pour éléments marqués */
-  @keyframes mobileFloat {
-    0% { transform: translateY(0) }
-    50% { transform: translateY(-10px) }
-    100% { transform: translateY(0) }
-  }
-  .mobile-float {
-    position: relative;
-    animation: mobileFloat 7s ease-in-out infinite !important;
   }
 
   /* Bouton mobile avec verre et reflet léger */
