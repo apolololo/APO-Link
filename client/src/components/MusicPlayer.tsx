@@ -205,41 +205,25 @@ export default function MusicPlayer() {
       <div 
         ref={playerRef}
         className="fixed bottom-8 left-8 z-[100]"
-        onMouseEnter={() => !isMobile && setIsExpanded(true)}
-        onMouseLeave={() => !isMobile && setIsExpanded(false)}
       >
-        {isMobile ? (
-          <MobileControls 
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            volume={volume}
-            setVolume={setVolume}
-            isMuted={isMuted}
-            setIsMuted={setIsMuted}
-            skipTrack={skipTrack}
-            isPlaying={isPlaying}
-            togglePlay={togglePlay}
-          />
-        ) : (
-          <DesktopControls 
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            volume={volume}
-            setVolume={setVolume}
-            isMuted={isMuted}
-            setIsMuted={setIsMuted}
-            skipTrack={skipTrack}
-            isPlaying={isPlaying}
-            togglePlay={togglePlay}
-          />
-        )}
+        <PlayerControls 
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+          volume={volume}
+          setVolume={setVolume}
+          isMuted={isMuted}
+          setIsMuted={setIsMuted}
+          skipTrack={skipTrack}
+          isPlaying={isPlaying}
+          togglePlay={togglePlay}
+        />
       </div>
     </>
   );
 }
 
-// Composant Mobile Dédié avec gestion robuste des événements tactiles
-function MobileControls({ 
+// Composant Unifié (Design Mobile pour tous)
+function PlayerControls({ 
   isExpanded, 
   setIsExpanded, 
   volume, 
@@ -255,15 +239,13 @@ function MobileControls({
     <div className="relative flex items-center">
       {/* Bouton Principal - Toggle */}
       <button 
-        className="flex items-center justify-center w-12 h-12 bg-black/60 backdrop-blur-xl rounded-full border border-white/20 shadow-lg active:scale-95 transition-transform z-20"
+        className="flex items-center justify-center w-12 h-12 bg-black/60 backdrop-blur-xl rounded-full border border-white/20 shadow-lg active:scale-95 transition-transform z-20 cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           setIsExpanded(!isExpanded);
         }}
         onTouchEnd={(e) => {
-          // Fallback pour certains navigateurs mobiles si onClick est capricieux
           e.stopPropagation();
-          // e.preventDefault(); // Attention: preventDefault ici peut bloquer le click
         }}
       >
         <Music className={`h-6 w-6 ${isPlaying ? 'text-[#29abe0] animate-pulse' : 'text-white/80'}`} />
@@ -280,7 +262,7 @@ function MobileControls({
             style={{ marginLeft: '-10px' }} // Chevauchement esthétique
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Play/Pause (utile si autoplay échoue) */}
+            {/* Play/Pause */}
             <button
               className="text-white hover:text-[#29abe0] active:scale-90 transition-all"
               onClick={togglePlay}
@@ -288,10 +270,10 @@ function MobileControls({
               {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </button>
 
-            {/* Volume Slider - Touch Action None pour empêcher le scroll */}
+            {/* Volume Slider */}
             <div 
               className="relative w-24 h-6 flex items-center"
-              onTouchMove={(e) => e.stopPropagation()} // Stop propagation to prevent scroll
+              onTouchMove={(e) => e.stopPropagation()}
             >
               <input
                 type="range"
@@ -305,7 +287,7 @@ function MobileControls({
                   if (newVol > 0) setIsMuted(false);
                 }}
                 className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                style={{ touchAction: 'none' }} // Critical for mobile sliders
+                style={{ touchAction: 'none' }}
               />
             </div>
 
@@ -320,73 +302,5 @@ function MobileControls({
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// Composant Desktop (similaire à avant mais nettoyé)
-function DesktopControls({ 
-  isExpanded, 
-  setIsExpanded, 
-  volume, 
-  setVolume, 
-  isMuted, 
-  setIsMuted, 
-  skipTrack,
-  isPlaying,
-  togglePlay
-}: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative flex items-center"
-    >
-      <div 
-        className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10 hover:bg-black/70 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <Music className={`h-5 w-5 ${isPlaying ? 'text-[#29abe0]' : 'text-white/80'}`} />
-      </div>
-
-      <motion.div
-        initial={{ width: 0, opacity: 0 }}
-        animate={{ 
-          width: isExpanded ? "auto" : 0, 
-          opacity: isExpanded ? 1 : 0,
-          x: isExpanded ? 0 : -10
-        }}
-        className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
-      >
-        <button
-          className="text-white hover:text-[#29abe0] h-8 w-8 ml-2 flex items-center justify-center"
-          onClick={togglePlay}
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </button>
-
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={(e) => {
-             const newVol = parseFloat(e.target.value);
-             setVolume(newVol);
-             if (newVol > 0) setIsMuted(false);
-          }}
-          className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-        />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:text-white/80 h-8 w-8"
-          onClick={skipTrack}
-        >
-          <SkipForward className="h-4 w-4" />
-        </Button>
-      </motion.div>
-    </motion.div>
   );
 }
