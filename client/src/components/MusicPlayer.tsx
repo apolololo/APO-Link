@@ -16,6 +16,9 @@ export default function MusicPlayer() {
   const [isExpanded, setIsExpanded] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   // Charger les musiques depuis GitHub
   useEffect(() => {
@@ -37,10 +40,49 @@ export default function MusicPlayer() {
       .catch(console.error);
   }, []);
 
-  // Gestion du volume
+  // Initialisation Web Audio API
   useEffect(() => {
+    if (!audioRef.current) return;
+
+    try {
+      // Création du contexte audio
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const ctx = new AudioContextClass();
+      audioContextRef.current = ctx;
+
+      const gainNode = ctx.createGain();
+      gainNodeRef.current = gainNode;
+
+      // On connecte l'élément audio uniquement si ce n'est pas déjà fait
+      if (!sourceNodeRef.current) {
+        const source = ctx.createMediaElementSource(audioRef.current);
+        sourceNodeRef.current = source;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+      }
+    } catch (e) {
+      console.error("Web Audio API setup failed:", e);
+    }
+
+    return () => {
+      // Nettoyage si nécessaire, mais attention à ne pas déconnecter le noeud source trop tôt
+    };
+  }, []);
+
+  // Gestion du volume via Web Audio API et élément audio standard
+  useEffect(() => {
+    const vol = isMuted ? 0 : volume;
+
+    // Méthode 1: Standard (pour Desktop/Android)
     if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+      audioRef.current.volume = vol;
+    }
+
+    // Méthode 2: Web Audio API (pour iOS)
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = vol;
     }
   }, [volume, isMuted]);
 
@@ -49,6 +91,11 @@ export default function MusicPlayer() {
     if (tracks.length === 0) return;
 
     const attemptPlay = () => {
+      // Réactiver le contexte audio (nécessaire pour Chrome/iOS)
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+
       if (audioRef.current && audioRef.current.paused) {
         audioRef.current.play()
           .then(() => {
@@ -82,6 +129,12 @@ export default function MusicPlayer() {
 
   const togglePlay = () => {
     if (!audioRef.current) return;
+    
+    // Réactiver le contexte audio au clic
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     if (isPlaying) {
       audioRef.current.pause();
     } else {
@@ -95,9 +148,13 @@ export default function MusicPlayer() {
     setCurrentTrack((prev) => (prev + 1) % tracks.length);
     // On laisse l'autoplay gérer la lecture après changement de src
     setTimeout(() => {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
       if (audioRef.current) audioRef.current.play().catch(console.error);
     }, 100);
   };
+
 
   const handleTrackEnd = () => {
     skipTrack();
@@ -115,6 +172,7 @@ export default function MusicPlayer() {
         onPause={() => setIsPlaying(false)}
         preload="auto"
         playsInline
+        crossOrigin="anonymous"
       />
       
       <div 
