@@ -235,6 +235,8 @@ export default function MusicPlayer() {
         ref={audioRef}
         src={tracks[currentTrack]}
         onEnded={handleTrackEnd}
+        preload="auto"
+        playsInline
       />
       {isMobile ? (
         <div className="relative flex items-center">
