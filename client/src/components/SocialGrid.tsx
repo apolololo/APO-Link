@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   SiTwitch, 
   SiYoutube, 
@@ -8,7 +9,8 @@ import {
   SiGithub,
   SiKofi
 } from "react-icons/si";
-import { motion } from "framer-motion";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Platform {
