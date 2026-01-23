@@ -140,18 +140,15 @@ const SocialGrid = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="mt-8 flex items-center justify-center gap-3"
+        className="mt-8 flex items-center justify-center w-full"
       >
-        <a
-          href="https://ko-fi.com/apo__"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 rounded-full mobile-glass transition-all duration-300 hover:scale-105"
-          data-platform="kofi"
-        >
-          <SiKofi className={isMobile ? "text-white/90 text-sm" : "text-white/90 text-sm"} />
-          <span className="text-white/80 text-sm">Buy me a coffee</span>
-        </a>
+        <iframe 
+          id='kofiframe' 
+          src='https://ko-fi.com/apo__/?hidefeed=true&widget=true&embed=true&preview=true' 
+          style={{ border: 'none', width: '100%', padding: '4px', background: '#f9f9f9', borderRadius: '10px' }} 
+          height='712' 
+          title='apo__'
+        />
       </motion.div>
     </div>
   );

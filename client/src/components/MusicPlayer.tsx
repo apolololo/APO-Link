@@ -247,7 +247,11 @@ export default function MusicPlayer() {
             <Music className="h-5 w-5 text-white/80" />
           </div>
           {isExpanded && (
-            <div className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10">
+            <div 
+              className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               <Button
                 variant="ghost"
                 size="icon"
