@@ -201,18 +201,6 @@ function MobileControls({
               {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </button>
 
-            {/* Mute Toggle */}
-            <button
-              className="text-white hover:text-white/80 active:scale-90 transition-all"
-              onClick={() => setIsMuted(!isMuted)}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="h-5 w-5" />
-              ) : (
-                <Volume2 className="h-5 w-5" />
-              )}
-            </button>
-
             {/* Volume Slider - Touch Action None pour empêcher le scroll */}
             <div 
               className="relative w-24 h-6 flex items-center"
@@ -224,7 +212,11 @@ function MobileControls({
                 max="1"
                 step="0.01"
                 value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const newVol = parseFloat(e.target.value);
+                  setVolume(newVol);
+                  if (newVol > 0) setIsMuted(false);
+                }}
                 className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                 style={{ touchAction: 'none' }} // Critical for mobile sliders
               />
