@@ -21,6 +21,7 @@ interface Platform {
 
 const SocialGrid = () => {
   const isMobile = useIsMobile();
+  const [showKofiWidget, setShowKofiWidget] = useState(false);
   const platforms: Platform[] = [
     {
       name: "Twitch",
