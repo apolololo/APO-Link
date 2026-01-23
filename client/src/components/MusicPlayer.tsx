@@ -40,12 +40,11 @@ export default function MusicPlayer() {
       .catch(console.error);
   }, []);
 
-  // Initialisation Web Audio API
-  useEffect(() => {
-    if (!audioRef.current) return;
+  // Initialisation Web Audio API encapsulée
+  const initWebAudio = () => {
+    if (!audioRef.current || audioContextRef.current) return;
 
     try {
-      // Création du contexte audio
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
 
@@ -55,19 +54,47 @@ export default function MusicPlayer() {
       const gainNode = ctx.createGain();
       gainNodeRef.current = gainNode;
 
-      // On connecte l'élément audio uniquement si ce n'est pas déjà fait
+      // On connecte l'élément audio
       if (!sourceNodeRef.current) {
         const source = ctx.createMediaElementSource(audioRef.current);
         sourceNodeRef.current = source;
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
       }
+      
+      // Appliquer le volume initial
+      gainNode.gain.value = isMuted ? 0 : volume;
     } catch (e) {
       console.error("Web Audio API setup failed:", e);
     }
+  };
+
+  // Tentative d'initialisation au montage (peut échouer si autoplay policy stricte)
+  useEffect(() => {
+    initWebAudio();
+  }, []);
+
+  // Déverrouillage robuste de l'audio sur interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      // 1. Initialiser si pas fait
+      if (!audioContextRef.current) {
+        initWebAudio();
+      }
+
+      // 2. Resume si suspendu
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume().then(() => {
+          console.log("AudioContext resumed by user interaction");
+        });
+      }
+    };
+
+    const events = ['click', 'touchstart', 'keydown', 'mousemove'];
+    events.forEach(e => document.addEventListener(e, unlockAudio, { passive: true }));
 
     return () => {
-      // Nettoyage si nécessaire, mais attention à ne pas déconnecter le noeud source trop tôt
+      events.forEach(e => document.removeEventListener(e, unlockAudio));
     };
   }, []);
 
@@ -200,8 +227,10 @@ export default function MusicPlayer() {
             volume={volume}
             setVolume={setVolume}
             isMuted={isMuted}
-            toggleMute={() => setIsMuted(!isMuted)}
+            setIsMuted={setIsMuted}
             skipTrack={skipTrack}
+            isPlaying={isPlaying}
+            togglePlay={togglePlay}
           />
         )}
       </div>
@@ -301,8 +330,10 @@ function DesktopControls({
   volume, 
   setVolume, 
   isMuted, 
-  toggleMute, 
-  skipTrack 
+  setIsMuted, 
+  skipTrack,
+  isPlaying,
+  togglePlay
 }: any) {
   return (
     <motion.div
@@ -314,7 +345,7 @@ function DesktopControls({
         className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10 hover:bg-black/70 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <Music className="h-5 w-5 text-white/80" />
+        <Music className={`h-5 w-5 ${isPlaying ? 'text-[#29abe0]' : 'text-white/80'}`} />
       </div>
 
       <motion.div
@@ -326,18 +357,12 @@ function DesktopControls({
         }}
         className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:text-white/80 h-8 w-8 ml-2"
-          onClick={toggleMute}
+        <button
+          className="text-white hover:text-[#29abe0] h-8 w-8 ml-2 flex items-center justify-center"
+          onClick={togglePlay}
         >
-          {isMuted || volume === 0 ? (
-            <VolumeX className="h-4 w-4" />
-          ) : (
-            <Volume2 className="h-4 w-4" />
-          )}
-        </Button>
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </button>
 
         <input
           type="range"
@@ -345,7 +370,11 @@ function DesktopControls({
           max="1"
           step="0.01"
           value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          onChange={(e) => {
+             const newVol = parseFloat(e.target.value);
+             setVolume(newVol);
+             if (newVol > 0) setIsMuted(false);
+          }}
           className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
         />
 
