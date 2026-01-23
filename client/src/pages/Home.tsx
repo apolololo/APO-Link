@@ -12,25 +12,6 @@ export default function Home() {
   useEffect(() => {
     document.body.style.userSelect = 'none';
     
-    // Débloquer l'autoplay audio au premier clic/touch
-    const unlockAudio = () => {
-      // Déclencher un événement pour débloquer l'audio
-      const event = new Event('click');
-      document.dispatchEvent(event);
-    };
-    
-    // Essayer de débloquer immédiatement avec un événement de mouvement de souris
-    const handleFirstInteraction = () => {
-      unlockAudio();
-      document.removeEventListener('mousemove', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('click', handleFirstInteraction);
-    };
-    
-    document.addEventListener('mousemove', handleFirstInteraction, { once: true });
-    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-    document.addEventListener('click', handleFirstInteraction, { once: true });
-    
     return () => {
       document.body.style.userSelect = '';
     };

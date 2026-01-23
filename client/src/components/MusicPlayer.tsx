@@ -98,14 +98,16 @@ export default function MusicPlayer() {
     // Wrapper pour ne déclencher unlockAndPlay qu'une fois
     const handleInteraction = () => {
       unlockAndPlay();
-      // Nettoyer les écouteurs après la première interaction réussie
-      events.forEach(event => {
-        document.removeEventListener(event, handleInteraction);
-      });
+      // On garde les écouteurs actifs jusqu'à ce que la musique joue vraiment
+      if (audioRef.current && !audioRef.current.paused) {
+          events.forEach(event => {
+            document.removeEventListener(event, handleInteraction);
+          });
+      }
     };
     
     events.forEach(event => {
-      document.addEventListener(event, handleInteraction, { once: true, passive: true });
+      document.addEventListener(event, handleInteraction, { passive: true });
     });
 
     return () => {
@@ -226,7 +228,7 @@ export default function MusicPlayer() {
 
   return (
     <div 
-      className="fixed bottom-8 left-8 z-50" 
+      className="fixed bottom-8 left-8 z-[100] pointer-events-none" 
       ref={playerRef}
       onMouseEnter={() => !isMobile && setIsExpanded(true)}
       onMouseLeave={() => !isMobile && setIsExpanded(false)}
@@ -239,24 +241,31 @@ export default function MusicPlayer() {
         playsInline
       />
       {isMobile ? (
-        <div className="relative flex items-center">
+        <div className="relative flex items-center pointer-events-auto">
           <div 
             className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 z-10"
-            onClick={() => setIsExpanded((v) => !v)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded((v) => !v);
+            }}
           >
             <Music className="h-5 w-5 text-white/80" />
           </div>
           {isExpanded && (
             <div 
               className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
+              onClick={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-white/80 h-8 w-8 ml-2"
-                onClick={toggleMute}
+                className="text-white hover:text-white/80 h-8 w-8 ml-2 cursor-pointer z-50 relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                }}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="h-4 w-4" />
@@ -272,16 +281,20 @@ export default function MusicPlayer() {
                 step="0.01"
                 value={volume}
                 onChange={handleVolumeChange}
+                onClick={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
                 onTouchMove={(e) => e.stopPropagation()}
-                className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer z-50 relative [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
               />
 
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-white/80 h-8 w-8"
-                onClick={skipTrack}
+                className="text-white hover:text-white/80 h-8 w-8 cursor-pointer z-50 relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  skipTrack();
+                }}
               >
                 <SkipForward className="h-4 w-4" />
               </Button>
@@ -293,7 +306,7 @@ export default function MusicPlayer() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative flex items-center"
+          className="relative flex items-center pointer-events-auto"
         >
           <div 
             className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10"
