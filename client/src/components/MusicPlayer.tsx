@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Volume2, VolumeX, SkipForward, Music } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Volume2, VolumeX, SkipForward, Music, Play, Pause } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -15,209 +15,88 @@ export default function MusicPlayer() {
   const [tracks, setTracks] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const fadeIntervalRef = useRef<number>();
   const playerRef = useRef<HTMLDivElement>(null);
 
+  // Charger les musiques depuis GitHub
   useEffect(() => {
     fetch('https://api.github.com/repos/apolololo/APO-Link/contents/musique')
       .then(response => response.json())
       .then(data => {
-        if (!Array.isArray(data)) {
-          console.error('Unexpected data format:', data);
-          return;
-        }
+        if (!Array.isArray(data)) return;
 
         const musicFiles = data
-          .filter((file) => file && typeof file === 'object' && file.type === 'file')
-          .filter((file) => {
-            // Filtrer uniquement les fichiers audio
+          .filter((file: any) => file && typeof file === 'object' && file.type === 'file')
+          .filter((file: any) => {
             const extension = file.name.split('.').pop()?.toLowerCase();
             return ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(extension || '');
           })
-          .map((file) => `${GITHUB_MUSIC_URL}/${file.name}`);
+          .map((file: any) => `${GITHUB_MUSIC_URL}/${file.name}`);
 
-        const shuffledTracks = [...musicFiles].sort(() => Math.random() - 0.5);
-        setTracks(shuffledTracks);
+        setTracks([...musicFiles].sort(() => Math.random() - 0.5));
       })
-      .catch(error => console.error('Error fetching music files:', error));
+      .catch(console.error);
   }, []);
 
-  // Débloquer l'autoplay avec un événement utilisateur
-  useEffect(() => {
-    if (tracks.length === 0 || !audioRef.current) return;
-
-    const unlockAndPlay = () => {
-      if (!audioRef.current || tracks.length === 0) return;
-      
-      // Si déjà en train de jouer, ne rien faire
-      if (!audioRef.current.paused) return;
-      
-      // Essayer de jouer
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch(error => {
-            console.warn("Autoplay prevented:", error);
-            setIsPlaying(false);
-          });
-      }
-    };
-
-    // Essayer de jouer immédiatement au chargement
-    const tryAutoplay = () => {
-      if (audioRef.current && tracks.length > 0) {
-        audioRef.current.volume = 0.5;
-        
-        // Charger et jouer
-        audioRef.current.load();
-        
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              console.log("Autoplay started successfully");
-              setIsPlaying(true);
-            })
-            .catch(error => {
-              console.warn("Autoplay blocked, waiting for interaction:", error);
-              // Si bloqué, on attend une interaction
-            });
-        }
-      }
-    };
-
-    // Essayer immédiatement
-    tryAutoplay();
-
-    // Débloquer l'audio dès qu'un événement utilisateur se produit
-    const events = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
-    
-    // Wrapper pour ne déclencher unlockAndPlay qu'une fois
-    const handleInteraction = () => {
-      unlockAndPlay();
-      // On garde les écouteurs actifs jusqu'à ce que la musique joue vraiment
-      if (audioRef.current && !audioRef.current.paused) {
-          events.forEach(event => {
-            document.removeEventListener(event, handleInteraction);
-          });
-      }
-    };
-    
-    events.forEach(event => {
-      document.addEventListener(event, handleInteraction, { passive: true });
-    });
-
-    return () => {
-      events.forEach(event => {
-        document.removeEventListener(event, handleInteraction);
-      });
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-    };
-  }, [tracks]); // On ne met pas 'volume' ici pour éviter les boucles
-
-
-  // Mise à jour du volume de l'élément audio quand le state change
+  // Gestion du volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
 
-  // Gérer le changement de piste
+  // Autoplay intelligent sur mobile et desktop
   useEffect(() => {
-    if (audioRef.current && tracks.length > 0) {
-      // Si c'est le premier chargement (currentTrack 0 et pas playing), on ne fait rien car tryAutoplay s'en charge
-      // Mais si on change de piste manuellement ou automatiquement...
-      if (isPlaying) {
-         // Ce bloc gère les changements de piste QUAND ça joue déjà
-         // On ne veut pas reset le volume ici, sauf si demandé
-      }
-    }
-  }, [currentTrack, tracks]);
+    if (tracks.length === 0) return;
 
-  // Effet pour s'assurer que la musique continue de jouer
-  useEffect(() => {
-    if (isPlaying && audioRef.current) {
-      const ensurePlaying = () => {
-        if (audioRef.current && audioRef.current.paused && !audioRef.current.ended) {
-          audioRef.current.play().catch(console.error);
-        }
-      };
-
-      const checkInterval = setInterval(ensurePlaying, 1000);
-      
-      const handlePause = () => {
-        if (!audioRef.current?.ended && isPlaying) {
-           // Si mis en pause mais qu'on est censé jouer, on relance
-           // Sauf si c'est l'utilisateur qui a mis pause (mais on n'a pas de bouton pause visible ici, juste mute)
-           audioRef.current?.play().catch(console.error);
-        }
-      };
-
-      audioRef.current.addEventListener('pause', handlePause);
-
-      return () => {
-        clearInterval(checkInterval);
-        if (audioRef.current) {
-            audioRef.current.removeEventListener('pause', handlePause);
-        }
-      };
-    }
-  }, [isPlaying]);
-
-  // Handle mouse enter/leave for the player
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (playerRef.current && !playerRef.current.contains(event.target as Node)) {
-        setIsExpanded(false);
+    const attemptPlay = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            // Une fois que ça joue, on peut retirer les écouteurs
+            ['click', 'touchstart', 'scroll', 'keydown', 'mousemove'].forEach(event => {
+              document.removeEventListener(event, attemptPlay);
+            });
+          })
+          .catch((e) => {
+            // Autoplay bloqué, on attend la prochaine interaction
+            console.log("Autoplay waiting for interaction");
+          });
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    const handleTouchStart = (event: TouchEvent) => {
-      if (playerRef.current && !playerRef.current.contains(event.target as Node)) {
-        setIsExpanded(false);
-      }
-    };
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    // Essayer tout de suite
+    attemptPlay();
+
+    // Et écouter toutes les interactions possibles
+    ['click', 'touchstart', 'scroll', 'keydown', 'mousemove'].forEach(event => {
+      document.addEventListener(event, attemptPlay, { passive: true });
+    });
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleTouchStart);
+      ['click', 'touchstart', 'scroll', 'keydown', 'mousemove'].forEach(event => {
+        document.removeEventListener(event, attemptPlay);
+      });
     };
-  }, []);
+  }, [tracks]);
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    // User intervention stops the fade-in
-    if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
     }
-    setVolume(newVolume);
-    if (newVolume > 0) {
-      setIsMuted(false);
-    }
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
+    setIsPlaying(!isPlaying);
   };
 
   const skipTrack = () => {
-    if (tracks.length > 0) {
-        setCurrentTrack((prev) => (prev + 1) % tracks.length);
-        // Note: L'audio element va recharger automatiquement car src change
-        // On doit attendre que le src change pour jouer
-        setTimeout(() => {
-            if (audioRef.current) {
-                audioRef.current.play()
-                    .then(() => setIsPlaying(true))
-                    .catch(console.error);
-            }
-        }, 100);
-    }
+    if (tracks.length === 0) return;
+    setCurrentTrack((prev) => (prev + 1) % tracks.length);
+    // On laisse l'autoplay gérer la lecture après changement de src
+    setTimeout(() => {
+      if (audioRef.current) audioRef.current.play().catch(console.error);
+    }, 100);
   };
 
   const handleTrackEnd = () => {
@@ -227,141 +106,208 @@ export default function MusicPlayer() {
   if (tracks.length === 0) return null;
 
   return (
-    <div 
-      className="fixed bottom-8 left-8 z-[100] pointer-events-none" 
-      ref={playerRef}
-      onMouseEnter={() => !isMobile && setIsExpanded(true)}
-      onMouseLeave={() => !isMobile && setIsExpanded(false)}
-    >
+    <>
       <audio
         ref={audioRef}
         src={tracks[currentTrack]}
         onEnded={handleTrackEnd}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         preload="auto"
         playsInline
       />
-      {isMobile ? (
-        <div className="relative flex items-center pointer-events-auto">
-          <div 
-            className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 z-10"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsExpanded((v) => !v);
-            }}
-          >
-            <Music className="h-5 w-5 text-white/80" />
-          </div>
-          {isExpanded && (
-            <div 
-              className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:text-white/80 h-8 w-8 ml-2 cursor-pointer z-50 relative"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMute();
-                }}
-              >
-                {isMuted || volume === 0 ? (
-                  <VolumeX className="h-4 w-4" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </Button>
+      
+      <div 
+        ref={playerRef}
+        className="fixed bottom-8 left-8 z-[100]"
+        onMouseEnter={() => !isMobile && setIsExpanded(true)}
+        onMouseLeave={() => !isMobile && setIsExpanded(false)}
+      >
+        {isMobile ? (
+          <MobileControls 
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
+            volume={volume}
+            setVolume={setVolume}
+            isMuted={isMuted}
+            setIsMuted={setIsMuted}
+            skipTrack={skipTrack}
+            isPlaying={isPlaying}
+            togglePlay={togglePlay}
+          />
+        ) : (
+          <DesktopControls 
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
+            volume={volume}
+            setVolume={setVolume}
+            isMuted={isMuted}
+            toggleMute={() => setIsMuted(!isMuted)}
+            skipTrack={skipTrack}
+          />
+        )}
+      </div>
+    </>
+  );
+}
 
+// Composant Mobile Dédié avec gestion robuste des événements tactiles
+function MobileControls({ 
+  isExpanded, 
+  setIsExpanded, 
+  volume, 
+  setVolume, 
+  isMuted, 
+  setIsMuted, 
+  skipTrack,
+  isPlaying,
+  togglePlay
+}: any) {
+  
+  return (
+    <div className="relative flex items-center">
+      {/* Bouton Principal - Toggle */}
+      <button 
+        className="flex items-center justify-center w-12 h-12 bg-black/60 backdrop-blur-xl rounded-full border border-white/20 shadow-lg active:scale-95 transition-transform z-20"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+        onTouchEnd={(e) => {
+          // Fallback pour certains navigateurs mobiles si onClick est capricieux
+          e.stopPropagation();
+          // e.preventDefault(); // Attention: preventDefault ici peut bloquer le click
+        }}
+      >
+        <Music className={`h-6 w-6 ${isPlaying ? 'text-[#29abe0] animate-pulse' : 'text-white/80'}`} />
+      </button>
+
+      {/* Contrôles Étendus */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div 
+            initial={{ opacity: 0, x: -20, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -20, scale: 0.9 }}
+            className="absolute left-10 flex items-center gap-4 bg-black/60 backdrop-blur-xl rounded-r-full pl-6 pr-5 py-3 border-y border-r border-white/20 h-12 shadow-lg"
+            style={{ marginLeft: '-10px' }} // Chevauchement esthétique
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Play/Pause (utile si autoplay échoue) */}
+            <button
+              className="text-white hover:text-[#29abe0] active:scale-90 transition-all"
+              onClick={togglePlay}
+            >
+              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            </button>
+
+            {/* Mute Toggle */}
+            <button
+              className="text-white hover:text-white/80 active:scale-90 transition-all"
+              onClick={() => setIsMuted(!isMuted)}
+            >
+              {isMuted || volume === 0 ? (
+                <VolumeX className="h-5 w-5" />
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
+            </button>
+
+            {/* Volume Slider - Touch Action None pour empêcher le scroll */}
+            <div 
+              className="relative w-24 h-6 flex items-center"
+              onTouchMove={(e) => e.stopPropagation()} // Stop propagation to prevent scroll
+            >
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.01"
                 value={volume}
-                onChange={handleVolumeChange}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onTouchMove={(e) => e.stopPropagation()}
-                className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer z-50 relative [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                style={{ touchAction: 'none' }} // Critical for mobile sliders
               />
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:text-white/80 h-8 w-8 cursor-pointer z-50 relative"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  skipTrack();
-                }}
-              >
-                <SkipForward className="h-4 w-4" />
-              </Button>
             </div>
-          )}
-        </div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative flex items-center pointer-events-auto"
-        >
-          <div 
-            className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <Music className="h-5 w-5 text-white/80" />
-          </div>
 
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ 
-              width: isExpanded ? "auto" : 0, 
-              opacity: isExpanded ? 1 : 0,
-              x: isExpanded ? 0 : -10
-            }}
-            transition={{ 
-              duration: 0.3, 
-              ease: "easeInOut" 
-            }}
-            className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:text-white/80 h-8 w-8 ml-2"
-              onClick={toggleMute}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="h-4 w-4" />
-              ) : (
-                <Volume2 className="h-4 w-4" />
-              )}
-            </Button>
-
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-            />
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:text-white/80 h-8 w-8"
+            {/* Skip Button */}
+            <button
+              className="text-white hover:text-white/80 active:scale-90 transition-all"
               onClick={skipTrack}
             >
-              <SkipForward className="h-4 w-4" />
-            </Button>
+              <SkipForward className="h-5 w-5" />
+            </button>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// Composant Desktop (similaire à avant mais nettoyé)
+function DesktopControls({ 
+  isExpanded, 
+  setIsExpanded, 
+  volume, 
+  setVolume, 
+  isMuted, 
+  toggleMute, 
+  skipTrack 
+}: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative flex items-center"
+    >
+      <div 
+        className="flex items-center justify-center w-10 h-10 bg-black/50 backdrop-blur-lg rounded-full cursor-pointer border border-white/10 z-10 hover:bg-black/70 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <Music className="h-5 w-5 text-white/80" />
+      </div>
+
+      <motion.div
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ 
+          width: isExpanded ? "auto" : 0, 
+          opacity: isExpanded ? 1 : 0,
+          x: isExpanded ? 0 : -10
+        }}
+        className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:text-white/80 h-8 w-8 ml-2"
+          onClick={toggleMute}
+        >
+          {isMuted || volume === 0 ? (
+            <VolumeX className="h-4 w-4" />
+          ) : (
+            <Volume2 className="h-4 w-4" />
+          )}
+        </Button>
+
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+        />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:text-white/80 h-8 w-8"
+          onClick={skipTrack}
+        >
+          <SkipForward className="h-4 w-4" />
+        </Button>
+      </motion.div>
+    </motion.div>
   );
 }
