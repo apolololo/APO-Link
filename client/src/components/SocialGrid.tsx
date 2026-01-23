@@ -140,15 +140,40 @@ const SocialGrid = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="mt-8 flex items-center justify-center w-full"
+        className="mt-8 flex flex-col items-center justify-center w-full gap-4"
       >
-        <iframe 
-          id='kofiframe' 
-          src='https://ko-fi.com/apo__/?hidefeed=true&widget=true&embed=true&preview=true' 
-          style={{ border: 'none', width: '100%', padding: '4px', background: '#f9f9f9', borderRadius: '10px' }} 
-          height='712' 
-          title='apo__'
-        />
+        <button
+          onClick={() => setShowKofiWidget(!showKofiWidget)}
+          className="flex items-center gap-3 px-6 py-3 rounded-full mobile-glass transition-all duration-300 hover:scale-105 group border border-white/10 hover:border-white/20 bg-black/20 hover:bg-black/30 backdrop-blur-md"
+        >
+          <SiKofi className="text-[#29abe0] text-xl" />
+          <span className="text-white/90 font-medium">Buy me a coffee</span>
+          {showKofiWidget ? (
+            <FaChevronUp className="text-white/60 ml-1 group-hover:text-white transition-colors" />
+          ) : (
+            <FaChevronDown className="text-white/60 ml-1 group-hover:text-white transition-colors" />
+          )}
+        </button>
+
+        <AnimatePresence>
+          {showKofiWidget && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-full overflow-hidden"
+            >
+              <iframe 
+                id='kofiframe' 
+                src='https://ko-fi.com/apo__/?hidefeed=true&widget=true&embed=true&preview=true' 
+                style={{ border: 'none', width: '100%', padding: '4px', background: '#f9f9f9', borderRadius: '10px' }} 
+                height='712' 
+                title='apo__'
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
