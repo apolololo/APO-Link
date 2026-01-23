@@ -146,11 +146,7 @@ const SocialGrid = () => {
           href="https://ko-fi.com/apo__"
           target="_blank"
           rel="noopener noreferrer"
-          className={
-            isMobile
-              ? "flex items-center gap-2 px-4 py-2 rounded-full mobile-glass"
-              : "flex items-center gap-2 px-4 py-2 bg-[#29abe0]/10 rounded-full transition-all duration-300 hover:bg-[#29abe0]/20"
-          }
+          className="flex items-center gap-2 px-4 py-2 rounded-full mobile-glass transition-all duration-300 hover:scale-105"
           data-platform="kofi"
         >
           <SiKofi className={isMobile ? "text-white/90 text-sm" : "text-[#29abe0] text-sm"} />

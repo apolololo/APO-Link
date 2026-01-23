@@ -231,6 +231,11 @@ export default function MusicPlayer() {
       onMouseEnter={() => !isMobile && setIsExpanded(true)}
       onMouseLeave={() => !isMobile && setIsExpanded(false)}
     >
+      <audio
+        ref={audioRef}
+        src={tracks[currentTrack]}
+        onEnded={handleTrackEnd}
+      />
       {isMobile ? (
         <div className="relative flex items-center">
           <div 
@@ -241,12 +246,6 @@ export default function MusicPlayer() {
           </div>
           {isExpanded && (
             <div className="absolute left-8 flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10">
-              <audio
-                ref={audioRef}
-                src={tracks[currentTrack]}
-                onEnded={handleTrackEnd}
-              />
-
               <Button
                 variant="ghost"
                 size="icon"
@@ -308,13 +307,6 @@ export default function MusicPlayer() {
             }}
             className="absolute left-8 overflow-hidden flex items-center gap-3 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2 border border-white/10"
           >
-            <audio
-              ref={audioRef}
-              src={tracks[currentTrack]}
-              onEnded={handleTrackEnd}
-              // Removed autoPlay={true} to handle it via JS for better control
-            />
-
             <Button
               variant="ghost"
               size="icon"
