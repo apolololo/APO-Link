@@ -23,13 +23,13 @@ export default function Home() {
       <DotCanvas />
       
       {/* Contenu scrollable */}
-      <div className="relative z-10">
+      <div className="relative z-10 w-full h-full overflow-y-auto">
         {!isMobile && <CustomCursor />}
         
         {/* Section principale avec les liens */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4">
+        <section className="min-h-screen flex flex-col items-center justify-center py-20 px-4 md:py-0">
         <Header />
-        <div className="mt-8">
+        <div className="mt-8 mb-20 md:mb-0">
           <SocialGrid />
         </div>
         </section>

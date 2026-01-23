@@ -206,30 +206,101 @@ export default function MusicPlayer() {
         ref={playerRef}
         className="fixed bottom-8 left-8 z-[100]"
       >
-        <PlayerControls 
-          isExpanded={isExpanded}
-          setIsExpanded={setIsExpanded}
-          volume={volume}
-          setVolume={setVolume}
-          isMuted={isMuted}
-          setIsMuted={setIsMuted}
-          skipTrack={skipTrack}
-          isPlaying={isPlaying}
-          togglePlay={togglePlay}
-        />
+        {isMobile ? (
+          <MobileControls 
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
+            volume={volume}
+            setVolume={setVolume}
+            isMuted={isMuted}
+            setIsMuted={setIsMuted}
+            skipTrack={skipTrack}
+            isPlaying={isPlaying}
+            togglePlay={togglePlay}
+          />
+        ) : (
+          <DesktopControls 
+            volume={volume}
+            setVolume={setVolume}
+            skipTrack={skipTrack}
+            isPlaying={isPlaying}
+            togglePlay={togglePlay}
+          />
+        )}
       </div>
     </>
   );
 }
 
-// Composant Unifié (Design Mobile pour tous)
-function PlayerControls({ 
+// Nouvelle Interface Desktop - Épurée, Visible, Moderne
+function DesktopControls({ 
+  volume, 
+  setVolume, 
+  skipTrack,
+  isPlaying,
+  togglePlay
+}: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-2xl hover:bg-black/50 transition-colors"
+    >
+      {/* Play/Pause */}
+      <button
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 group"
+        onClick={togglePlay}
+      >
+        {isPlaying ? (
+          <Pause className="h-4 w-4 fill-current" />
+        ) : (
+          <Play className="h-4 w-4 fill-current ml-0.5" />
+        )}
+      </button>
+
+      {/* Separator */}
+      <div className="w-px h-4 bg-white/10" />
+
+      {/* Volume */}
+      <div className="flex items-center gap-2 group">
+        {volume === 0 ? (
+          <VolumeX className="h-4 w-4 text-white/50" />
+        ) : (
+          <Volume2 className="h-4 w-4 text-white/50 group-hover:text-white/80 transition-colors" />
+        )}
+        <div className="w-20">
+           <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Separator */}
+      <div className="w-px h-4 bg-white/10" />
+
+      {/* Skip */}
+      <button
+        className="text-white/70 hover:text-white transition-colors active:scale-90"
+        onClick={skipTrack}
+      >
+        <SkipForward className="h-5 w-5" />
+      </button>
+    </motion.div>
+  );
+}
+
+// Interface Mobile (Reste inchangée car fonctionnelle)
+function MobileControls({ 
   isExpanded, 
   setIsExpanded, 
   volume, 
   setVolume, 
-  isMuted, 
-  setIsMuted, 
   skipTrack,
   isPlaying,
   togglePlay
@@ -284,7 +355,6 @@ function PlayerControls({
                 onChange={(e) => {
                   const newVol = parseFloat(e.target.value);
                   setVolume(newVol);
-                  if (newVol > 0) setIsMuted(false);
                 }}
                 className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                 style={{ touchAction: 'none' }}
