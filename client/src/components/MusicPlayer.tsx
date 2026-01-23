@@ -205,6 +205,8 @@ export default function MusicPlayer() {
       <div 
         ref={playerRef}
         className="fixed bottom-8 left-8 z-[100]"
+        onMouseEnter={() => !isMobile && setIsExpanded(true)}
+        onMouseLeave={() => !isMobile && setIsExpanded(false)}
       >
         {isMobile ? (
           <MobileControls 
@@ -220,6 +222,7 @@ export default function MusicPlayer() {
           />
         ) : (
           <DesktopControls 
+            isExpanded={isExpanded}
             volume={volume}
             setVolume={setVolume}
             skipTrack={skipTrack}
@@ -232,8 +235,9 @@ export default function MusicPlayer() {
   );
 }
 
-// Nouvelle Interface Desktop - Épurée, Visible, Moderne
+// Nouvelle Interface Desktop - Verre Trempé & Interaction
 function DesktopControls({ 
+  isExpanded,
   volume, 
   setVolume, 
   skipTrack,
@@ -242,55 +246,86 @@ function DesktopControls({
 }: any) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-2xl hover:bg-black/50 transition-colors"
+      layout
+      initial={false}
+      animate={{ 
+        width: isExpanded ? "auto" : "3.5rem",
+        backgroundColor: isExpanded ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.05)"
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="relative flex items-center h-14 backdrop-blur-2xl border border-white/20 rounded-full shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden group"
+      style={{
+        boxShadow: isExpanded 
+          ? "0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 0 0 1px rgba(255, 255, 255, 0.1)" 
+          : "0 4px 16px 0 rgba(31, 38, 135, 0.2)"
+      }}
     >
-      {/* Play/Pause */}
-      <button
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 group"
-        onClick={togglePlay}
-      >
-        {isPlaying ? (
-          <Pause className="h-4 w-4 fill-current" />
-        ) : (
-          <Play className="h-4 w-4 fill-current ml-0.5" />
-        )}
-      </button>
-
-      {/* Separator */}
-      <div className="w-px h-4 bg-white/10" />
-
-      {/* Volume */}
-      <div className="flex items-center gap-2 group">
-        {volume === 0 ? (
-          <VolumeX className="h-4 w-4 text-white/50" />
-        ) : (
-          <Volume2 className="h-4 w-4 text-white/50 group-hover:text-white/80 transition-colors" />
-        )}
-        <div className="w-20">
-           <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
-          />
-        </div>
+      {/* Effet de reflet (Shine) */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+      
+      {/* Icône Musicale (Toujours visible) */}
+      <div className="flex items-center justify-center w-14 h-14 shrink-0 z-10">
+        <Music className={`h-6 w-6 text-white/90 drop-shadow-md transition-transform duration-300 ${isPlaying ? 'animate-pulse' : ''}`} />
       </div>
 
-      {/* Separator */}
-      <div className="w-px h-4 bg-white/10" />
+      {/* Contrôles (Visibles au survol) */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: "auto" }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center gap-4 pr-6 overflow-hidden whitespace-nowrap z-10"
+          >
+            {/* Play/Pause */}
+            <button
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 border border-white/10 backdrop-blur-sm"
+              onClick={togglePlay}
+            >
+              {isPlaying ? (
+                <Pause className="h-4 w-4 fill-current" />
+              ) : (
+                <Play className="h-4 w-4 fill-current ml-0.5" />
+              )}
+            </button>
 
-      {/* Skip */}
-      <button
-        className="text-white/70 hover:text-white transition-colors active:scale-90"
-        onClick={skipTrack}
-      >
-        <SkipForward className="h-5 w-5" />
-      </button>
+            {/* Separator */}
+            <div className="w-px h-6 bg-white/10" />
+
+            {/* Volume */}
+            <div className="flex items-center gap-3 group/vol">
+              {volume === 0 ? (
+                <VolumeX className="h-4 w-4 text-white/60" />
+              ) : (
+                <Volume2 className="h-4 w-4 text-white/60 group-hover/vol:text-white transition-colors" />
+              )}
+              <div className="w-24 relative flex items-center">
+                 <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(255,255,255,0.5)] hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Separator */}
+            <div className="w-px h-6 bg-white/10" />
+
+            {/* Skip */}
+            <button
+              className="text-white/70 hover:text-white transition-colors active:scale-90 hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+              onClick={skipTrack}
+            >
+              <SkipForward className="h-5 w-5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
