@@ -6,7 +6,7 @@ import {
   SiInstagram, 
   SiKickstarter,
   SiGithub,
-  SiPaypal
+  SiKofi
 } from "react-icons/si";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -143,18 +143,18 @@ const SocialGrid = () => {
         className="mt-8 flex items-center justify-center gap-3"
       >
         <a
-          href="https://streamelements.com/tryh_apo/tip"
+          href="https://ko-fi.com/apo__"
           target="_blank"
           rel="noopener noreferrer"
           className={
             isMobile
               ? "flex items-center gap-2 px-4 py-2 rounded-full mobile-glass"
-              : "flex items-center gap-2 px-4 py-2 bg-[#0070BA]/10 rounded-full transition-all duration-300 hover:bg-[#0070BA]/20"
+              : "flex items-center gap-2 px-4 py-2 bg-[#29abe0]/10 rounded-full transition-all duration-300 hover:bg-[#29abe0]/20"
           }
-          data-platform="paypal"
+          data-platform="kofi"
         >
-          <SiPaypal className={isMobile ? "text-white/90 text-sm" : "text-[#0070BA] text-sm"} />
-          <span className="text-white/80 text-sm">Me soutenir</span>
+          <SiKofi className={isMobile ? "text-white/90 text-sm" : "text-[#29abe0] text-sm"} />
+          <span className="text-white/80 text-sm">Buy me a coffee</span>
         </a>
       </motion.div>
     </div>
